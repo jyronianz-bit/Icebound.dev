@@ -108,7 +108,7 @@ function NexusUI:CreateWindow(options)
     options = options or {}
     local windowName = options.Name or "Nexus UI"
     local windowSize = options.Size or UDim2.new(0, 520, 0, 580)
-    local toggleKey = options.ToggleKey or Enum.KeyCode.Insert
+    local toggleKey = options.ToggleKey or Enum.KeyCode.RightShift
     
     local window = {
         Tabs = {},
@@ -410,7 +410,7 @@ function NexusUI:CreateWindow(options)
             end
             
             Tween(TabButton, {BackgroundTransparency = 0.2, TextColor3 = Config.Text}, Config.AnimationSpeed)
-            Tween(TabIndicator, {Size = UDim2.new(0.6, 0, 0, 2)}, Config.AnimationSpeed)
+            Tween(TabIndicator, {Size = UDim2.new(0.8, 0, 0, 2)}, Config.AnimationSpeed)
             TabContent.Visible = true
             window.CurrentTab = tab
         end)
@@ -422,7 +422,7 @@ function NexusUI:CreateWindow(options)
         if #window.Tabs == 0 then
             TabButton.BackgroundTransparency = 0.2
             TabButton.TextColor3 = Config.Text
-            TabIndicator.Size = UDim2.new(0.6, 0, 0, 2)
+            TabIndicator.Size = UDim2.new(0.8, 0, 0, 2)
             TabContent.Visible = true
             window.CurrentTab = tab
         end
@@ -629,8 +629,8 @@ function NexusUI:CreateWindow(options)
             
             local SliderButton = CreateElement("Frame", {
                 Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0, 6, 0.5, 0),
-                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0, -6, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
                 ZIndex = 2,
@@ -650,7 +650,7 @@ function NexusUI:CreateWindow(options)
                 local fillSize = SliderBar.AbsoluteSize.X * percentage
                 
                 Tween(SliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
-                Tween(SliderButton, {Position = UDim2.new(0, math.max(6, fillSize), 0.5, 0)}, 0.1)
+                Tween(SliderButton, {Position = UDim2.new(0, fillSize - 6, 0.5, 0)}, 0.1)
                 ValueLabel.Text = tostring(val)
                 
                 if flag then
@@ -1036,8 +1036,6 @@ function NexusUI:CreateWindow(options)
                 SetValue = UpdateKeybind,
                 GetValue = function() return currentKey end
             }
-        end
-        
         end
         
         function tab:AddLabel(text)
