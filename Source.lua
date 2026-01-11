@@ -1,5 +1,5 @@
 --[[
-    Icebound UI Library
+    Nexus UI Library
     A modern, feature-rich Roblox UI library with smooth animations and polished visuals
     Version 1.0.0
 ]]
@@ -88,6 +88,7 @@ function NexusUI:CreateWindow(options)
     options = options or {}
     local windowName = options.Name or "Nexus UI"
     local windowSize = options.Size or UDim2.new(0, 550, 0, 600)
+    local toggleKey = options.ToggleKey or Enum.KeyCode.RightShift
     
     local window = {
         Tabs = {},
@@ -95,6 +96,7 @@ function NexusUI:CreateWindow(options)
         Elements = {},
         Flags = {},
         Configuration = {},
+        ToggleKey = toggleKey,
     }
     
     -- Main ScreenGui
@@ -118,19 +120,7 @@ function NexusUI:CreateWindow(options)
     AddCorner(MainFrame, UDim.new(0, 12))
     AddStroke(MainFrame, Config.Border, 1)
     
-    -- Drop shadow effect
-    local Shadow = CreateElement("ImageLabel", {
-        Name = "Shadow",
-        Size = UDim2.new(1, 40, 1, 40),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundTransparency = 1,
-        Image = "rbxasset://textures/ui/GuiImagePlaceholder.png",
-        ImageColor3 = Color3.fromRGB(0, 0, 0),
-        ImageTransparency = 0.7,
-        ZIndex = 0,
-        Parent = MainFrame
-    })
+    -- Shadow removed for cleaner look
     
     -- Title Bar
     local TitleBar = CreateElement("Frame", {
@@ -162,6 +152,67 @@ function NexusUI:CreateWindow(options)
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = TitleBar
     })
+    
+    -- Minimize Button
+    local MinimizeButton = CreateElement("TextButton", {
+        Name = "MinimizeButton",
+        Size = UDim2.new(0, 30, 0, 30),
+        Position = UDim2.new(1, -75, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = Config.Accent,
+        BorderSizePixel = 0,
+        Font = Enum.Font.GothamBold,
+        Text = "−",
+        TextColor3 = Config.Text,
+        TextSize = 20,
+        Parent = TitleBar
+    })
+    AddCorner(MinimizeButton, UDim.new(0, 6))
+    
+    MinimizeButton.MouseEnter:Connect(function()
+        Tween(MinimizeButton, {BackgroundColor3 = Config.AccentHover}, Config.HoverSpeed)
+    end)
+    
+    MinimizeButton.MouseLeave:Connect(function()
+        Tween(MinimizeButton, {BackgroundColor3 = Config.Accent}, Config.HoverSpeed)
+    end)
+    
+    MinimizeButton.MouseButton1Click:Connect(function()
+        MainFrame.Visible = false
+        
+        -- Create notification
+        local NotificationFrame = CreateElement("Frame", {
+            Size = UDim2.new(0, 300, 0, 60),
+            Position = UDim2.new(1, -310, 1, -70),
+            BackgroundColor3 = Config.SecondaryBackground,
+            BorderSizePixel = 0,
+            Parent = ScreenGui
+        })
+        AddCorner(NotificationFrame, UDim.new(0, 8))
+        AddStroke(NotificationFrame, Config.Accent, 2)
+        
+        local NotifText = CreateElement("TextLabel", {
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 10, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamSemibold,
+            Text = "UI Minimized - Press " .. (window.ToggleKey or "RightShift") .. " to reopen",
+            TextColor3 = Config.Text,
+            TextSize = 12,
+            TextWrapped = true,
+            Parent = NotificationFrame
+        })
+        
+        -- Animate in
+        NotificationFrame.Position = UDim2.new(1, 10, 1, -70)
+        Tween(NotificationFrame, {Position = UDim2.new(1, -310, 1, -70)}, Config.AnimationSpeed)
+        
+        -- Auto remove after 3 seconds
+        wait(3)
+        Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, -70)}, Config.AnimationSpeed)
+        wait(Config.AnimationSpeed)
+        NotificationFrame:Destroy()
+    end)
     
     -- Close Button
     local CloseButton = CreateElement("TextButton", {
@@ -263,6 +314,13 @@ function NexusUI:CreateWindow(options)
     -- Entrance animation
     MainFrame.Size = UDim2.new(0, 0, 0, 0)
     Tween(MainFrame, {Size = windowSize}, Config.AnimationSpeed * 1.5)
+    
+    -- Toggle keybind
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == toggleKey then
+            MainFrame.Visible = not MainFrame.Visible
+        end
+    end)
     
     -- Tab Functions
     function window:CreateTab(tabName, icon)
@@ -593,6 +651,28 @@ function NexusUI:CreateWindow(options)
                 end)
             end
             
+            local function UpdateSliderFromInput(input)
+                local mousePos = input.Position.X
+                local sliderPos = SliderBar.AbsolutePosition.X
+                local sliderSize = SliderBar.AbsoluteSize.X
+                local percentage = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
+                local newValue = min + (max - min) * percentage
+                UpdateSlider(newValue)
+            end
+            
+            SliderBar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                    UpdateSliderFromInput(input)
+                end
+            end)
+            
+            SliderBar.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+            
             SliderButton.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = true
@@ -607,12 +687,7 @@ function NexusUI:CreateWindow(options)
             
             UserInputService.InputChanged:Connect(function(input)
                 if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    local mousePos = input.Position.X
-                    local sliderPos = SliderBar.AbsolutePosition.X
-                    local sliderSize = SliderBar.AbsoluteSize.X
-                    local percentage = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
-                    local newValue = min + (max - min) * percentage
-                    UpdateSlider(newValue)
+                    UpdateSliderFromInput(input)
                 end
             end)
             
@@ -845,6 +920,108 @@ function NexusUI:CreateWindow(options)
                     callback(text)
                 end,
                 GetValue = function() return Textbox.Text end
+            }
+        end
+        
+        function tab:AddKeybind(options)
+            options = options or {}
+            local keybindName = options.Name or "Keybind"
+            local default = options.Default or Enum.KeyCode.E
+            local flag = options.Flag
+            local callback = options.Callback or function() end
+            
+            local KeybindFrame = CreateElement("Frame", {
+                Size = UDim2.new(1, 0, 0, 44),
+                BackgroundColor3 = Config.SecondaryBackground,
+                BorderSizePixel = 0,
+                Parent = TabContent
+            })
+            AddCorner(KeybindFrame)
+            AddStroke(KeybindFrame)
+            
+            local KeybindLabel = CreateElement("TextLabel", {
+                Size = UDim2.new(1, -100, 1, 0),
+                Position = UDim2.new(0, 12, 0, 0),
+                BackgroundTransparency = 1,
+                Font = Enum.Font.Gotham,
+                Text = keybindName,
+                TextColor3 = Config.Text,
+                TextSize = 14,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = KeybindFrame
+            })
+            
+            local KeybindButton = CreateElement("TextButton", {
+                Size = UDim2.new(0, 80, 0, 28),
+                Position = UDim2.new(1, -90, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = Config.Background,
+                BorderSizePixel = 0,
+                Font = Enum.Font.GothamBold,
+                Text = default.Name,
+                TextColor3 = Config.Accent,
+                TextSize = 12,
+                Parent = KeybindFrame
+            })
+            AddCorner(KeybindButton, UDim.new(0, 6))
+            AddStroke(KeybindButton, Config.Accent, 1)
+            
+            local currentKey = default
+            local listening = false
+            
+            local function UpdateKeybind(key)
+                currentKey = key
+                KeybindButton.Text = key.Name
+                if flag then
+                    window.Flags[flag] = key
+                end
+            end
+            
+            KeybindButton.MouseButton1Click:Connect(function()
+                if listening then return end
+                
+                listening = true
+                KeybindButton.Text = "..."
+                KeybindButton.TextColor3 = Config.Warning
+                
+                local connection
+                connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                        listening = false
+                        connection:Disconnect()
+                        
+                        UpdateKeybind(input.KeyCode)
+                        KeybindButton.TextColor3 = Config.Accent
+                        
+                        spawn(function()
+                            callback(input.KeyCode)
+                        end)
+                    end
+                end)
+            end)
+            
+            -- Listen for the keybind being pressed
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == currentKey then
+                    spawn(function()
+                        callback(currentKey)
+                    end)
+                end
+            end)
+            
+            KeybindFrame.MouseEnter:Connect(function()
+                Tween(KeybindFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+            end)
+            
+            KeybindFrame.MouseLeave:Connect(function()
+                Tween(KeybindFrame, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+            end)
+            
+            UpdateKeybind(default)
+            
+            return {
+                SetValue = UpdateKeybind,
+                GetValue = function() return currentKey end
             }
         end
         
