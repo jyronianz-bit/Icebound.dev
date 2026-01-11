@@ -207,38 +207,93 @@ function NexusUI:CreateWindow(options)
             end)
         elseif i == 2 then
             button.MouseButton1Click:Connect(function()
+                -- Smooth minimize animation
+                Tween(MainFrame, {
+                    Size = UDim2.new(0, windowSize.X.Offset * 0.5, 0, windowSize.Y.Offset * 0.5),
+                    Position = UDim2.new(0.5, 0, 1.5, 0)
+                }, 0.3)
+                
+                wait(0.3)
                 MainFrame.Visible = false
+                MainFrame.Size = windowSize
+                MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
                 
+                -- Create modern notification
                 local NotificationFrame = CreateElement("Frame", {
-                    Size = UDim2.new(0, 280, 0, 50),
-                    Position = UDim2.new(1, -290, 1, -60),
-                    BackgroundColor3 = Config.SecondaryBackground,
-                    BackgroundTransparency = Config.SecondaryTransparency,
+                    Size = UDim2.new(0, 300, 0, 60),
+                    Position = UDim2.new(0.5, -150, 1, 80),
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+                    BackgroundTransparency = 0.05,
                     BorderSizePixel = 0,
-                    Parent = ScreenGui
+                    Parent = ScreenGui,
+                    ZIndex = 100
                 })
-                AddCorner(NotificationFrame, UDim.new(0, 8))
-                AddStroke(NotificationFrame, Config.Accent, 1)
-                AddBlur(NotificationFrame)
+                AddCorner(NotificationFrame, UDim.new(0, 10))
+                AddStroke(NotificationFrame, Color3.fromRGB(60, 60, 75), 1)
                 
-                local NotifText = CreateElement("TextLabel", {
-                    Size = UDim2.new(1, -20, 1, 0),
-                    Position = UDim2.new(0, 10, 0, 0),
+                -- Icon circle
+                local IconCircle = CreateElement("Frame", {
+                    Size = UDim2.new(0, 32, 0, 32),
+                    Position = UDim2.new(0, 14, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundColor3 = Config.Accent,
+                    BackgroundTransparency = 0.2,
+                    BorderSizePixel = 0,
+                    Parent = NotificationFrame
+                })
+                AddCorner(IconCircle, UDim.new(1, 0))
+                
+                local IconText = CreateElement("TextLabel", {
+                    Size = UDim2.new(1, 0, 1, 0),
                     BackgroundTransparency = 1,
-                    Font = Enum.Font.Gotham,
-                    Text = "Press " .. window.ToggleKey.Name .. " to reopen",
-                    TextColor3 = Config.Text,
-                    TextSize = 12,
-                    TextWrapped = true,
+                    Font = Enum.Font.GothamBold,
+                    Text = "i",
+                    TextColor3 = Config.Accent,
+                    TextSize = 18,
+                    Parent = IconCircle
+                })
+                
+                -- Text container
+                local TextContainer = CreateElement("Frame", {
+                    Size = UDim2.new(1, -60, 1, -16),
+                    Position = UDim2.new(0, 54, 0, 8),
+                    BackgroundTransparency = 1,
                     Parent = NotificationFrame
                 })
                 
-                NotificationFrame.Position = UDim2.new(1, 10, 1, -60)
-                Tween(NotificationFrame, {Position = UDim2.new(1, -290, 1, -60)}, 0.2)
+                local NotifTitle = CreateElement("TextLabel", {
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.GothamBold,
+                    Text = "UI Minimized",
+                    TextColor3 = Config.Text,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = TextContainer
+                })
+                
+                local NotifBody = CreateElement("TextLabel", {
+                    Size = UDim2.new(1, 0, 0, 16),
+                    Position = UDim2.new(0, 0, 0, 20),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.Gotham,
+                    Text = "Press " .. window.ToggleKey.Name .. " to reopen",
+                    TextColor3 = Config.SubText,
+                    TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = TextContainer
+                })
+                
+                -- Slide in animation
+                Tween(NotificationFrame, {Position = UDim2.new(0.5, -150, 1, -70)}, 0.4)
                 
                 wait(3)
-                Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, -60)}, 0.2)
-                wait(0.2)
+                
+                -- Slide out animation
+                Tween(NotificationFrame, {Position = UDim2.new(0.5, -150, 1, 80)}, 0.4)
+                wait(0.4)
                 NotificationFrame:Destroy()
             end)
         end
@@ -629,7 +684,7 @@ function NexusUI:CreateWindow(options)
             
             local SliderButton = CreateElement("Frame", {
                 Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0, 0, 0.5, 0),
+                Position = UDim2.new(0, 6, 0.5, 0),
                 AnchorPoint = Vector2.new(0.5, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
@@ -650,7 +705,7 @@ function NexusUI:CreateWindow(options)
                 local fillSize = SliderBar.AbsoluteSize.X * percentage
                 
                 Tween(SliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
-                Tween(SliderButton, {Position = UDim2.new(0, fillSize, 0.5, 0)}, 0.1)
+                Tween(SliderButton, {Position = UDim2.new(0, math.max(6, fillSize), 0.5, 0)}, 0.1)
                 ValueLabel.Text = tostring(val)
                 
                 if flag then
@@ -1036,6 +1091,221 @@ function NexusUI:CreateWindow(options)
                 SetValue = UpdateKeybind,
                 GetValue = function() return currentKey end
             }
+        end
+        
+        function tab:AddColorPicker(options)
+            options = options or {}
+            local colorName = options.Name or "Color Picker"
+            local default = options.Default or Color3.fromRGB(255, 255, 255)
+            local flag = options.Flag
+            local callback = options.Callback or function() end
+            
+            local ColorFrame = CreateElement("Frame", {
+                Size = UDim2.new(1, 0, 0, 40),
+                BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
+                BorderSizePixel = 0,
+                Parent = TabContent
+            })
+            AddCorner(ColorFrame, UDim.new(0, 6))
+            AddStroke(ColorFrame)
+            
+            local ColorLabel = CreateElement("TextLabel", {
+                Size = UDim2.new(1, -90, 1, 0),
+                Position = UDim2.new(0, 12, 0, 0),
+                BackgroundTransparency = 1,
+                Font = Enum.Font.Gotham,
+                Text = colorName,
+                TextColor3 = Config.Text,
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = ColorFrame
+            })
+            
+            local ColorDisplay = CreateElement("TextButton", {
+                Size = UDim2.new(0, 60, 0, 24),
+                Position = UDim2.new(1, -68, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = default,
+                BorderSizePixel = 0,
+                Text = "",
+                Parent = ColorFrame
+            })
+            AddCorner(ColorDisplay, UDim.new(0, 5))
+            AddStroke(ColorDisplay, Config.Border, 1)
+            
+            local currentColor = default
+            local pickerOpen = false
+            
+            -- Color Picker Window
+            local ColorPicker = CreateElement("Frame", {
+                Size = UDim2.new(0, 200, 0, 220),
+                Position = UDim2.new(0.5, -100, 0.5, -110),
+                AnchorPoint = Vector2.new(0, 0),
+                BackgroundColor3 = Config.Background,
+                BackgroundTransparency = Config.BackgroundTransparency,
+                BorderSizePixel = 0,
+                Visible = false,
+                ZIndex = 50,
+                Parent = ColorFrame.Parent.Parent.Parent
+            })
+            AddCorner(ColorPicker, UDim.new(0, 10))
+            AddStroke(ColorPicker, Config.Border, 1)
+            AddBlur(ColorPicker)
+            
+            local PickerTitle = CreateElement("TextLabel", {
+                Size = UDim2.new(1, -20, 0, 30),
+                Position = UDim2.new(0, 10, 0, 5),
+                BackgroundTransparency = 1,
+                Font = Enum.Font.GothamBold,
+                Text = colorName,
+                TextColor3 = Config.Text,
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = ColorPicker
+            })
+            
+            -- Color Preview
+            local ColorPreview = CreateElement("Frame", {
+                Size = UDim2.new(1, -20, 0, 40),
+                Position = UDim2.new(0, 10, 0, 40),
+                BackgroundColor3 = default,
+                BorderSizePixel = 0,
+                Parent = ColorPicker
+            })
+            AddCorner(ColorPreview, UDim.new(0, 6))
+            
+            -- RGB Sliders
+            local sliderY = 90
+            local rgbValues = {
+                {Name = "R", Value = math.floor(default.R * 255), Color = Color3.fromRGB(255, 100, 100)},
+                {Name = "G", Value = math.floor(default.G * 255), Color = Color3.fromRGB(100, 255, 100)},
+                {Name = "B", Value = math.floor(default.B * 255), Color = Color3.fromRGB(100, 100, 255)}
+            }
+            
+            local function UpdateColor()
+                local newColor = Color3.fromRGB(
+                    rgbValues[1].Value,
+                    rgbValues[2].Value,
+                    rgbValues[3].Value
+                )
+                currentColor = newColor
+                ColorDisplay.BackgroundColor3 = newColor
+                ColorPreview.BackgroundColor3 = newColor
+                
+                if flag then
+                    window.Flags[flag] = newColor
+                end
+                
+                spawn(function()
+                    callback(newColor)
+                end)
+            end
+            
+            for i, data in ipairs(rgbValues) do
+                local SliderContainer = CreateElement("Frame", {
+                    Size = UDim2.new(1, -20, 0, 30),
+                    Position = UDim2.new(0, 10, 0, sliderY + (i - 1) * 35),
+                    BackgroundTransparency = 1,
+                    Parent = ColorPicker
+                })
+                
+                local Label = CreateElement("TextLabel", {
+                    Size = UDim2.new(0, 15, 0, 20),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.GothamBold,
+                    Text = data.Name,
+                    TextColor3 = data.Color,
+                    TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = SliderContainer
+                })
+                
+                local ValueBox = CreateElement("TextLabel", {
+                    Size = UDim2.new(0, 30, 0, 20),
+                    Position = UDim2.new(1, -30, 0, 0),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.Gotham,
+                    Text = tostring(data.Value),
+                    TextColor3 = Config.Text,
+                    TextSize = 10,
+                    TextXAlignment = Enum.TextXAlignment.Right,
+                    Parent = SliderContainer
+                })
+                
+                local SliderBar = CreateElement("Frame", {
+                    Size = UDim2.new(1, -50, 0, 4),
+                    Position = UDim2.new(0, 20, 0, 8),
+                    BackgroundColor3 = Config.Border,
+                    BackgroundTransparency = 0.3,
+                    BorderSizePixel = 0,
+                    Parent = SliderContainer
+                })
+                AddCorner(SliderBar, UDim.new(1, 0))
+                
+                local SliderFill = CreateElement("Frame", {
+                    Size = UDim2.new(data.Value / 255, 0, 1, 0),
+                    BackgroundColor3 = data.Color,
+                    BorderSizePixel = 0,
+                    Parent = SliderBar
+                })
+                AddCorner(SliderFill, UDim.new(1, 0))
+                
+                local dragging = false
+                
+                local function UpdateSlider(value)
+                    value = math.clamp(math.floor(value), 0, 255)
+                    data.Value = value
+                    ValueBox.Text = tostring(value)
+                    SliderFill.Size = UDim2.new(value / 255, 0, 1, 0)
+                    UpdateColor()
+                end
+                
+                SliderBar.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                        local percentage = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                        UpdateSlider(percentage * 255)
+                    end
+                end)
+                
+                SliderBar.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = false
+                    end
+                end)
+                
+                UserInputService.InputChanged:Connect(function(input)
+                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        local percentage = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                        UpdateSlider(percentage * 255)
+                    end
+                end)
+            end
+            
+            ColorDisplay.MouseButton1Click:Connect(function()
+                pickerOpen = not pickerOpen
+                ColorPicker.Visible = pickerOpen
+            end)
+            
+            ColorFrame.MouseEnter:Connect(function()
+                Tween(ColorFrame, {BackgroundTransparency = 0.1}, Config.HoverSpeed)
+            end)
+            
+            ColorFrame.MouseLeave:Connect(function()
+                Tween(ColorFrame, {BackgroundTransparency = Config.SecondaryTransparency}, Config.HoverSpeed)
+            end)
+            
+            return {
+                SetValue = function(color)
+                    rgbValues[1].Value = math.floor(color.R * 255)
+                    rgbValues[2].Value = math.floor(color.G * 255)
+                    rgbValues[3].Value = math.floor(color.B * 255)
+                    UpdateColor()
+                end,
+                GetValue = function() return currentColor end
+            }
+        end
         end
         
         function tab:AddLabel(text)
