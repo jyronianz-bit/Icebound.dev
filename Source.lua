@@ -353,6 +353,17 @@ function NexusUI:CreateWindow(options)
         })
         AddCorner(TabButton, UDim.new(0, 6))
         
+        -- Tab Underline Indicator
+        local TabIndicator = CreateElement("Frame", {
+            Size = UDim2.new(0, 0, 0, 2),
+            Position = UDim2.new(0.5, 0, 1, -2),
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundColor3 = Config.Accent,
+            BorderSizePixel = 0,
+            Parent = TabButton
+        })
+        AddCorner(TabIndicator, UDim.new(1, 0))
+        
         -- Tab Content
         local TabContent = CreateElement("ScrollingFrame", {
             Name = tabName .. "Content",
@@ -394,20 +405,24 @@ function NexusUI:CreateWindow(options)
         TabButton.MouseButton1Click:Connect(function()
             for _, t in pairs(window.Tabs) do
                 Tween(t.Button, {BackgroundTransparency = 1, TextColor3 = Config.SubText}, Config.AnimationSpeed)
+                Tween(t.Indicator, {Size = UDim2.new(0, 0, 0, 2)}, Config.AnimationSpeed)
                 t.Content.Visible = false
             end
             
             Tween(TabButton, {BackgroundTransparency = 0.2, TextColor3 = Config.Text}, Config.AnimationSpeed)
+            Tween(TabIndicator, {Size = UDim2.new(0.8, 0, 0, 2)}, Config.AnimationSpeed)
             TabContent.Visible = true
             window.CurrentTab = tab
         end)
         
         tab.Button = TabButton
         tab.Content = TabContent
+        tab.Indicator = TabIndicator
         
         if #window.Tabs == 0 then
             TabButton.BackgroundTransparency = 0.2
             TabButton.TextColor3 = Config.Text
+            TabIndicator.Size = UDim2.new(0.8, 0, 0, 2)
             TabContent.Visible = true
             window.CurrentTab = tab
         end
@@ -614,12 +629,12 @@ function NexusUI:CreateWindow(options)
             
             local SliderButton = CreateElement("Frame", {
                 Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(1, -6, 0.5, 0),
-                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0, -6, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
                 ZIndex = 2,
-                Parent = SliderFill
+                Parent = SliderBar
             })
             AddCorner(SliderButton, UDim.new(1, 0))
             
@@ -632,7 +647,10 @@ function NexusUI:CreateWindow(options)
                 value = val
                 
                 local percentage = (val - min) / (max - min)
+                local fillSize = SliderBar.AbsoluteSize.X * percentage
+                
                 Tween(SliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
+                Tween(SliderButton, {Position = UDim2.new(0, fillSize - 6, 0.5, 0)}, 0.1)
                 ValueLabel.Text = tostring(val)
                 
                 if flag then
