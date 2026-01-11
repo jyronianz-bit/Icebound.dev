@@ -447,12 +447,15 @@ function NexusUI:CreateWindow(options)
         Position = UDim2.new(0, 10, 0, 45),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
-        ScrollBarThickness = 0, -- Hidden scrollbar for clean look
-        ScrollBarImageTransparency = 1,
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Config.Accent,
+        ScrollBarImageTransparency = 0.5,
         CanvasSize = UDim2.new(0, 0, 0, 35),
         ScrollingDirection = Enum.ScrollingDirection.X,
-        HorizontalScrollBarInset = Enum.ScrollBarInset.None,
+        HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
         VerticalScrollBarInset = Enum.ScrollBarInset.None,
+        ElasticBehavior = Enum.ElasticBehavior.Never,
+        ScrollingEnabled = true,
         Parent = MainFrame
     })
     
@@ -467,6 +470,18 @@ function NexusUI:CreateWindow(options)
     -- Update canvas size when tabs are added
     TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabContainer.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 10, 0, 35)
+    end)
+    
+    -- Add mouse wheel scrolling support for horizontal scrolling
+    TabContainer.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseWheel then
+            local scrollAmount = -input.Position.Z * 30 -- Adjust scroll speed
+            local newPosition = TabContainer.CanvasPosition.X + scrollAmount
+            TabContainer.CanvasPosition = Vector2.new(
+                math.clamp(newPosition, 0, math.max(0, TabContainer.CanvasSize.X.Offset - TabContainer.AbsoluteSize.X)),
+                TabContainer.CanvasPosition.Y
+            )
+        end
     end)
     
     -- Content Container
@@ -844,12 +859,17 @@ function NexusUI:CreateWindow(options)
             })
             AddCorner(SliderFill, UDim.new(1, 0))
             
-            local SliderButton = CreateElement("Frame", {
+            -- Calculate initial position based on default value
+            local initialPercentage = (default - min) / (max - min)
+            
+            local SliderButton = CreateElement("TextButton", {
                 Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0, 0, 0.5, 0), -- Fixed: starts at 0 instead of -6
-                AnchorPoint = Vector2.new(0.5, 0.5), -- Fixed: centered anchor point
+                Position = UDim2.new(0, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
+                Text = "",
+                AutoButtonColor = false,
                 ZIndex = 2,
                 Parent = SliderBar
             })
@@ -866,8 +886,8 @@ function NexusUI:CreateWindow(options)
                 local percentage = (val - min) / (max - min)
                 local fillSize = SliderBar.AbsoluteSize.X * percentage
                 
-                Tween(SliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
-                Tween(SliderButton, {Position = UDim2.new(0, fillSize, 0.5, 0)}, 0.1) -- Fixed positioning
+                SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+                SliderButton.Position = UDim2.new(0, fillSize, 0.5, 0)
                 ValueLabel.Text = tostring(val)
                 
                 if flag then
@@ -919,7 +939,15 @@ function NexusUI:CreateWindow(options)
                 end
             end)
             
-            UpdateSlider(default)
+            -- Set initial position without animation
+            local initialFillSize = SliderBar.AbsoluteSize.X * initialPercentage
+            SliderFill.Size = UDim2.new(initialPercentage, 0, 1, 0)
+            SliderButton.Position = UDim2.new(0, initialFillSize, 0.5, 0)
+            ValueLabel.Text = tostring(default)
+            
+            if flag then
+                window.Flags[flag] = default
+            end
             
             return {
                 SetValue = UpdateSlider,
