@@ -1,6 +1,9 @@
 --[[
-    Nexus UI Library v2.0
+    Nexus UI Library v2.1
     Modern acrylic design with customizable transparency
+    - Enhanced minimize animation
+    - Improved notification system
+    - Fixed slider ball positioning
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -37,6 +40,11 @@ local Config = {
     SliderHeight = 4,
     DropdownHeight = 32,
 }
+
+-- Notification Queue System
+local NotificationQueue = {}
+local ActiveNotifications = 0
+local MaxNotifications = 3
 
 -- Utility Functions
 local function CreateElement(className, properties)
@@ -103,6 +111,180 @@ local function AddBlur(parent)
     end
 end
 
+-- Enhanced Notification System
+local function CreateNotification(screenGui, options)
+    options = options or {}
+    local title = options.Title or "Notification"
+    local message = options.Message or ""
+    local duration = options.Duration or 3
+    local notifType = options.Type or "Info" -- Info, Success, Warning, Error
+    
+    -- Color schemes for different notification types
+    local typeColors = {
+        Info = Config.Accent,
+        Success = Color3.fromRGB(40, 201, 64),
+        Warning = Color3.fromRGB(255, 189, 46),
+        Error = Color3.fromRGB(255, 95, 86)
+    }
+    
+    local accentColor = typeColors[notifType] or Config.Accent
+    
+    -- Calculate position based on active notifications
+    local yOffset = -60 - (ActiveNotifications * 70)
+    
+    local NotificationFrame = CreateElement("Frame", {
+        Size = UDim2.new(0, 320, 0, 60),
+        Position = UDim2.new(1, 10, 1, yOffset),
+        BackgroundColor3 = Config.SecondaryBackground,
+        BackgroundTransparency = Config.SecondaryTransparency,
+        BorderSizePixel = 0,
+        ZIndex = 100,
+        Parent = screenGui
+    })
+    AddCorner(NotificationFrame, UDim.new(0, 10))
+    AddStroke(NotificationFrame, accentColor, 2)
+    AddBlur(NotificationFrame)
+    
+    -- Accent bar on the left
+    local AccentBar = CreateElement("Frame", {
+        Size = UDim2.new(0, 4, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = accentColor,
+        BorderSizePixel = 0,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    AddCorner(AccentBar, UDim.new(0, 10))
+    
+    -- Icon based on type
+    local icons = {
+        Info = "ℹ",
+        Success = "✓",
+        Warning = "⚠",
+        Error = "✕"
+    }
+    
+    local IconLabel = CreateElement("TextLabel", {
+        Size = UDim2.new(0, 40, 0, 40),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundColor3 = accentColor,
+        BackgroundTransparency = 0.8,
+        Font = Enum.Font.GothamBold,
+        Text = icons[notifType] or "ℹ",
+        TextColor3 = accentColor,
+        TextSize = 20,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    AddCorner(IconLabel, UDim.new(1, 0))
+    
+    -- Title
+    local TitleLabel = CreateElement("TextLabel", {
+        Size = UDim2.new(1, -110, 0, 18),
+        Position = UDim2.new(0, 58, 0, 8),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamBold,
+        Text = title,
+        TextColor3 = Config.Text,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    
+    -- Message
+    local MessageLabel = CreateElement("TextLabel", {
+        Size = UDim2.new(1, -110, 0, 28),
+        Position = UDim2.new(0, 58, 0, 26),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.Gotham,
+        Text = message,
+        TextColor3 = Config.SubText,
+        TextSize = 11,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    
+    -- Close button
+    local CloseButton = CreateElement("TextButton", {
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(1, -32, 0, 8),
+        BackgroundColor3 = Config.Background,
+        BackgroundTransparency = 0.5,
+        Font = Enum.Font.GothamBold,
+        Text = "×",
+        TextColor3 = Config.SubText,
+        TextSize = 16,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    AddCorner(CloseButton, UDim.new(1, 0))
+    
+    -- Progress bar
+    local ProgressBar = CreateElement("Frame", {
+        Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.new(0, 0, 1, -2),
+        BackgroundColor3 = accentColor,
+        BackgroundTransparency = 0.3,
+        BorderSizePixel = 0,
+        ZIndex = 101,
+        Parent = NotificationFrame
+    })
+    
+    local ProgressFill = CreateElement("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = accentColor,
+        BorderSizePixel = 0,
+        ZIndex = 102,
+        Parent = ProgressBar
+    })
+    
+    ActiveNotifications = ActiveNotifications + 1
+    
+    -- Slide in animation
+    Tween(NotificationFrame, {Position = UDim2.new(1, -330, 1, yOffset)}, 0.4)
+    
+    -- Progress bar animation
+    local progressTween = TweenService:Create(
+        ProgressFill,
+        TweenInfo.new(duration, Enum.EasingStyle.Linear),
+        {Size = UDim2.new(0, 0, 1, 0)}
+    )
+    progressTween:Play()
+    
+    -- Hover effects
+    CloseButton.MouseEnter:Connect(function()
+        Tween(CloseButton, {BackgroundTransparency = 0.2, TextColor3 = Config.Text}, 0.1)
+    end)
+    
+    CloseButton.MouseLeave:Connect(function()
+        Tween(CloseButton, {BackgroundTransparency = 0.5, TextColor3 = Config.SubText}, 0.1)
+    end)
+    
+    local function CloseNotification()
+        progressTween:Cancel()
+        Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, yOffset)}, 0.3)
+        wait(0.3)
+        ActiveNotifications = ActiveNotifications - 1
+        NotificationFrame:Destroy()
+    end
+    
+    CloseButton.MouseButton1Click:Connect(CloseNotification)
+    
+    -- Auto close
+    spawn(function()
+        wait(duration)
+        if NotificationFrame.Parent then
+            CloseNotification()
+        end
+    end)
+    
+    return NotificationFrame
+end
+
 -- Main Library Functions
 function NexusUI:CreateWindow(options)
     options = options or {}
@@ -127,6 +309,11 @@ function NexusUI:CreateWindow(options)
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         Parent = game.CoreGui
     })
+    
+    -- Notification function
+    function window:Notify(options)
+        return CreateNotification(ScreenGui, options)
+    end
     
     -- Main Frame
     local MainFrame = CreateElement("Frame", {
@@ -201,45 +388,40 @@ function NexusUI:CreateWindow(options)
         
         if i == 1 then
             button.MouseButton1Click:Connect(function()
-                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-                wait(0.2)
+                -- Enhanced close animation
+                Tween(MainFrame, {
+                    Size = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 1
+                }, 0.3)
+                wait(0.3)
                 ScreenGui:Destroy()
             end)
         elseif i == 2 then
             button.MouseButton1Click:Connect(function()
+                -- Enhanced minimize animation
+                local originalSize = MainFrame.Size
+                local originalPos = MainFrame.Position
+                
+                -- Shrink and fade animation
+                Tween(MainFrame, {
+                    Size = UDim2.new(0, 300, 0, 60),
+                    Position = UDim2.new(0.5, 0, 0, -30),
+                    BackgroundTransparency = 0.5
+                }, 0.3)
+                
+                wait(0.3)
                 MainFrame.Visible = false
+                MainFrame.Size = originalSize
+                MainFrame.Position = originalPos
+                MainFrame.BackgroundTransparency = Config.BackgroundTransparency
                 
-                local NotificationFrame = CreateElement("Frame", {
-                    Size = UDim2.new(0, 280, 0, 50),
-                    Position = UDim2.new(1, -290, 1, -60),
-                    BackgroundColor3 = Config.SecondaryBackground,
-                    BackgroundTransparency = Config.SecondaryTransparency,
-                    BorderSizePixel = 0,
-                    Parent = ScreenGui
+                -- Enhanced notification
+                window:Notify({
+                    Title = "UI Minimized",
+                    Message = "Press " .. window.ToggleKey.Name .. " to restore",
+                    Duration = 4,
+                    Type = "Info"
                 })
-                AddCorner(NotificationFrame, UDim.new(0, 8))
-                AddStroke(NotificationFrame, Config.Accent, 1)
-                AddBlur(NotificationFrame)
-                
-                local NotifText = CreateElement("TextLabel", {
-                    Size = UDim2.new(1, -20, 1, 0),
-                    Position = UDim2.new(0, 10, 0, 0),
-                    BackgroundTransparency = 1,
-                    Font = Enum.Font.Gotham,
-                    Text = "Press " .. window.ToggleKey.Name .. " to reopen",
-                    TextColor3 = Config.Text,
-                    TextSize = 12,
-                    TextWrapped = true,
-                    Parent = NotificationFrame
-                })
-                
-                NotificationFrame.Position = UDim2.new(1, 10, 1, -60)
-                Tween(NotificationFrame, {Position = UDim2.new(1, -290, 1, -60)}, 0.2)
-                
-                wait(3)
-                Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, -60)}, 0.2)
-                wait(0.2)
-                NotificationFrame:Destroy()
             end)
         end
     end
@@ -322,12 +504,36 @@ function NexusUI:CreateWindow(options)
     
     -- Entrance animation
     MainFrame.Size = UDim2.new(0, 0, 0, 0)
-    Tween(MainFrame, {Size = windowSize}, 0.4)
+    MainFrame.BackgroundTransparency = 1
+    Tween(MainFrame, {
+        Size = windowSize,
+        BackgroundTransparency = Config.BackgroundTransparency
+    }, 0.5)
     
     -- Toggle keybind
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == toggleKey then
-            MainFrame.Visible = not MainFrame.Visible
+            if MainFrame.Visible then
+                -- Hide with animation
+                Tween(MainFrame, {
+                    Size = UDim2.new(0, 300, 0, 60),
+                    Position = UDim2.new(0.5, 0, 0, -30),
+                    BackgroundTransparency = 0.8
+                }, 0.25)
+                wait(0.25)
+                MainFrame.Visible = false
+            else
+                -- Show with animation
+                MainFrame.Visible = true
+                MainFrame.Size = UDim2.new(0, 300, 0, 60)
+                MainFrame.Position = UDim2.new(0.5, 0, 0, -30)
+                MainFrame.BackgroundTransparency = 0.8
+                Tween(MainFrame, {
+                    Size = windowSize,
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    BackgroundTransparency = Config.BackgroundTransparency
+                }, 0.3)
+            end
         end
     end)
     
@@ -629,8 +835,8 @@ function NexusUI:CreateWindow(options)
             
             local SliderButton = CreateElement("Frame", {
                 Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0, -6, 0.5, 0),
-                AnchorPoint = Vector2.new(0, 0.5),
+                Position = UDim2.new(0, 0, 0.5, 0), -- Fixed: starts at 0 instead of -6
+                AnchorPoint = Vector2.new(0.5, 0.5), -- Fixed: centered anchor point
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
                 ZIndex = 2,
@@ -650,7 +856,7 @@ function NexusUI:CreateWindow(options)
                 local fillSize = SliderBar.AbsoluteSize.X * percentage
                 
                 Tween(SliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
-                Tween(SliderButton, {Position = UDim2.new(0, fillSize - 6, 0.5, 0)}, 0.1)
+                Tween(SliderButton, {Position = UDim2.new(0, fillSize, 0.5, 0)}, 0.1) -- Fixed positioning
                 ValueLabel.Text = tostring(val)
                 
                 if flag then
