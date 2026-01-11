@@ -440,13 +440,19 @@ function NexusUI:CreateWindow(options)
         Parent = TitleBar
     })
     
-    -- Tab Container (Top horizontal tabs)
-    local TabContainer = CreateElement("Frame", {
+    -- Tab Container (Top horizontal tabs) - Now scrollable
+    local TabContainer = CreateElement("ScrollingFrame", {
         Name = "TabContainer",
         Size = UDim2.new(1, -20, 0, 35),
         Position = UDim2.new(0, 10, 0, 45),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
+        ScrollBarThickness = 0, -- Hidden scrollbar for clean look
+        ScrollBarImageTransparency = 1,
+        CanvasSize = UDim2.new(0, 0, 0, 35),
+        ScrollingDirection = Enum.ScrollingDirection.X,
+        HorizontalScrollBarInset = Enum.ScrollBarInset.None,
+        VerticalScrollBarInset = Enum.ScrollBarInset.None,
         Parent = MainFrame
     })
     
@@ -457,6 +463,11 @@ function NexusUI:CreateWindow(options)
         Padding = UDim.new(0, 8),
         Parent = TabContainer
     })
+    
+    -- Update canvas size when tabs are added
+    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContainer.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 10, 0, 35)
+    end)
     
     -- Content Container
     local ContentContainer = CreateElement("Frame", {
@@ -1300,11 +1311,12 @@ function NexusUI:CreateWindow(options)
         end
     })
     
+    local bgOpacityDefault = math.floor((1 - Config.BackgroundTransparency) * 100)
     InterfaceTab:AddSlider({
         Name = "Background Opacity",
         Min = 0,
         Max = 100,
-        Default = math.floor((1 - Config.BackgroundTransparency) * 100),
+        Default = bgOpacityDefault,
         Increment = 5,
         Callback = function(value)
             local transparency = 1 - (value / 100)
@@ -1313,11 +1325,12 @@ function NexusUI:CreateWindow(options)
         end
     })
     
+    local elemOpacityDefault = math.floor((1 - Config.SecondaryTransparency) * 100)
     InterfaceTab:AddSlider({
         Name = "Element Opacity",
         Min = 0,
         Max = 100,
-        Default = math.floor((1 - Config.SecondaryTransparency) * 100),
+        Default = elemOpacityDefault,
         Increment = 5,
         Callback = function(value)
             local transparency = 1 - (value / 100)
