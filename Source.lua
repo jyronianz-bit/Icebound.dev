@@ -1,40 +1,41 @@
 --[[
-    Nexus UI Library
-    A modern, feature-rich Roblox UI library with smooth animations and polished visuals
-    Version 1.0.0
+    Nexus UI Library v2.0
+    Modern acrylic design with customizable transparency
 ]]
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local NexusUI = {}
 NexusUI.__index = NexusUI
 
--- Configuration
+-- Default Configuration
 local Config = {
-    -- Theme colors
-    Background = Color3.fromRGB(18, 18, 24),
-    SecondaryBackground = Color3.fromRGB(24, 24, 32),
-    Accent = Color3.fromRGB(138, 98, 255),
-    AccentHover = Color3.fromRGB(158, 118, 255),
+    -- Theme colors (customizable)
+    Background = Color3.fromRGB(20, 20, 25),
+    BackgroundTransparency = 0.15,
+    SecondaryBackground = Color3.fromRGB(30, 30, 38),
+    SecondaryTransparency = 0.2,
+    Accent = Color3.fromRGB(200, 100, 255),
+    AccentHover = Color3.fromRGB(220, 120, 255),
     Text = Color3.fromRGB(240, 240, 245),
     SubText = Color3.fromRGB(160, 160, 175),
-    Border = Color3.fromRGB(45, 45, 55),
-    Success = Color3.fromRGB(76, 209, 55),
-    Warning = Color3.fromRGB(255, 184, 0),
-    Error = Color3.fromRGB(255, 71, 87),
+    Border = Color3.fromRGB(60, 60, 75),
+    
+    -- Glass/Acrylic effect
+    AcrylicEnabled = true,
+    BlurIntensity = 20,
     
     -- Animation settings
-    AnimationSpeed = 0.25,
+    AnimationSpeed = 0.3,
     HoverSpeed = 0.15,
     
     -- Sizes
-    CornerRadius = UDim.new(0, 8),
-    ButtonHeight = 36,
-    ToggleSize = 44,
-    SliderHeight = 6,
-    DropdownHeight = 36,
+    CornerRadius = UDim.new(0, 10),
+    ButtonHeight = 32,
+    ToggleSize = 40,
+    SliderHeight = 4,
+    DropdownHeight = 32,
 }
 
 -- Utility Functions
@@ -68,6 +69,7 @@ local function AddStroke(parent, color, thickness)
     return CreateElement("UIStroke", {
         Color = color or Config.Border,
         Thickness = thickness or 1,
+        Transparency = 0.5,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Parent = parent
     })
@@ -83,11 +85,29 @@ local function AddPadding(parent, padding)
     })
 end
 
+local function AddBlur(parent)
+    if Config.AcrylicEnabled then
+        local blur = CreateElement("ImageLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://8992230677",
+            ImageColor3 = Color3.fromRGB(0, 0, 0),
+            ImageTransparency = 0.7,
+            ScaleType = Enum.ScaleType.Tile,
+            TileSize = UDim2.new(0, 128, 0, 128),
+            ZIndex = 0,
+            Parent = parent
+        })
+        AddCorner(blur, Config.CornerRadius)
+        return blur
+    end
+end
+
 -- Main Library Functions
 function NexusUI:CreateWindow(options)
     options = options or {}
     local windowName = options.Name or "Nexus UI"
-    local windowSize = options.Size or UDim2.new(0, 550, 0, 600)
+    local windowSize = options.Size or UDim2.new(0, 520, 0, 580)
     local toggleKey = options.ToggleKey or Enum.KeyCode.RightShift
     
     local window = {
@@ -97,6 +117,7 @@ function NexusUI:CreateWindow(options)
         Flags = {},
         Configuration = {},
         ToggleKey = toggleKey,
+        Config = Config,
     }
     
     -- Main ScreenGui
@@ -114,164 +135,152 @@ function NexusUI:CreateWindow(options)
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Config.Background,
+        BackgroundTransparency = Config.BackgroundTransparency,
         BorderSizePixel = 0,
+        ClipsDescendants = true,
         Parent = ScreenGui
     })
-    AddCorner(MainFrame, UDim.new(0, 12))
+    AddCorner(MainFrame, UDim.new(0, 14))
     AddStroke(MainFrame, Config.Border, 1)
-    
-    -- Shadow removed for cleaner look
+    AddBlur(MainFrame)
     
     -- Title Bar
     local TitleBar = CreateElement("Frame", {
         Name = "TitleBar",
-        Size = UDim2.new(1, 0, 0, 50),
-        BackgroundColor3 = Config.SecondaryBackground,
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundTransparency = 1,
         BorderSizePixel = 0,
         Parent = MainFrame
     })
-    AddCorner(TitleBar, UDim.new(0, 12))
     
-    local TitleBarCover = CreateElement("Frame", {
-        Size = UDim2.new(1, 0, 0, 25),
-        Position = UDim2.new(0, 0, 1, -25),
-        BackgroundColor3 = Config.SecondaryBackground,
-        BorderSizePixel = 0,
+    -- macOS style window controls
+    local ControlsFrame = CreateElement("Frame", {
+        Size = UDim2.new(0, 60, 0, 20),
+        Position = UDim2.new(0, 12, 0, 10),
+        BackgroundTransparency = 1,
         Parent = TitleBar
     })
     
+    local controlColors = {
+        {Color3.fromRGB(255, 95, 86), "Close"},
+        {Color3.fromRGB(255, 189, 46), "Minimize"},
+        {Color3.fromRGB(40, 201, 64), "Maximize"}
+    }
+    
+    for i, data in ipairs(controlColors) do
+        local button = CreateElement("TextButton", {
+            Size = UDim2.new(0, 12, 0, 12),
+            Position = UDim2.new(0, (i - 1) * 20, 0, 4),
+            BackgroundColor3 = data[1],
+            BorderSizePixel = 0,
+            Text = "",
+            Parent = ControlsFrame
+        })
+        AddCorner(button, UDim.new(1, 0))
+        
+        local icon = CreateElement("TextLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            Text = "",
+            TextColor3 = data[1]:Lerp(Color3.fromRGB(0, 0, 0), 0.5),
+            TextSize = 10,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            Parent = button
+        })
+        
+        button.MouseEnter:Connect(function()
+            if i == 1 then icon.Text = "×"
+            elseif i == 2 then icon.Text = "−"
+            else icon.Text = "+" end
+        end)
+        
+        button.MouseLeave:Connect(function()
+            icon.Text = ""
+        end)
+        
+        if i == 1 then
+            button.MouseButton1Click:Connect(function()
+                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
+                wait(0.2)
+                ScreenGui:Destroy()
+            end)
+        elseif i == 2 then
+            button.MouseButton1Click:Connect(function()
+                MainFrame.Visible = false
+                
+                local NotificationFrame = CreateElement("Frame", {
+                    Size = UDim2.new(0, 280, 0, 50),
+                    Position = UDim2.new(1, -290, 1, -60),
+                    BackgroundColor3 = Config.SecondaryBackground,
+                    BackgroundTransparency = Config.SecondaryTransparency,
+                    BorderSizePixel = 0,
+                    Parent = ScreenGui
+                })
+                AddCorner(NotificationFrame, UDim.new(0, 8))
+                AddStroke(NotificationFrame, Config.Accent, 1)
+                AddBlur(NotificationFrame)
+                
+                local NotifText = CreateElement("TextLabel", {
+                    Size = UDim2.new(1, -20, 1, 0),
+                    Position = UDim2.new(0, 10, 0, 0),
+                    BackgroundTransparency = 1,
+                    Font = Enum.Font.Gotham,
+                    Text = "Press " .. window.ToggleKey.Name .. " to reopen",
+                    TextColor3 = Config.Text,
+                    TextSize = 12,
+                    TextWrapped = true,
+                    Parent = NotificationFrame
+                })
+                
+                NotificationFrame.Position = UDim2.new(1, 10, 1, -60)
+                Tween(NotificationFrame, {Position = UDim2.new(1, -290, 1, -60)}, 0.2)
+                
+                wait(3)
+                Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, -60)}, 0.2)
+                wait(0.2)
+                NotificationFrame:Destroy()
+            end)
+        end
+    end
+    
+    -- Title
     local Title = CreateElement("TextLabel", {
         Name = "Title",
-        Size = UDim2.new(1, -100, 1, 0),
-        Position = UDim2.new(0, 20, 0, 0),
+        Size = UDim2.new(1, -80, 1, 0),
+        Position = UDim2.new(0, 80, 0, 0),
         BackgroundTransparency = 1,
-        Font = Enum.Font.GothamBold,
+        Font = Enum.Font.GothamMedium,
         Text = windowName,
         TextColor3 = Config.Text,
-        TextSize = 16,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = TitleBar
     })
     
-    -- Minimize Button
-    local MinimizeButton = CreateElement("TextButton", {
-        Name = "MinimizeButton",
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(1, -75, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundColor3 = Config.Accent,
-        BorderSizePixel = 0,
-        Font = Enum.Font.GothamBold,
-        Text = "−",
-        TextColor3 = Config.Text,
-        TextSize = 20,
-        Parent = TitleBar
-    })
-    AddCorner(MinimizeButton, UDim.new(0, 6))
-    
-    MinimizeButton.MouseEnter:Connect(function()
-        Tween(MinimizeButton, {BackgroundColor3 = Config.AccentHover}, Config.HoverSpeed)
-    end)
-    
-    MinimizeButton.MouseLeave:Connect(function()
-        Tween(MinimizeButton, {BackgroundColor3 = Config.Accent}, Config.HoverSpeed)
-    end)
-    
-    MinimizeButton.MouseButton1Click:Connect(function()
-        MainFrame.Visible = false
-        
-        -- Create notification
-        local NotificationFrame = CreateElement("Frame", {
-            Size = UDim2.new(0, 300, 0, 60),
-            Position = UDim2.new(1, -310, 1, -70),
-            BackgroundColor3 = Config.SecondaryBackground,
-            BorderSizePixel = 0,
-            Parent = ScreenGui
-        })
-        AddCorner(NotificationFrame, UDim.new(0, 8))
-        AddStroke(NotificationFrame, Config.Accent, 2)
-        
-        local NotifText = CreateElement("TextLabel", {
-            Size = UDim2.new(1, -20, 1, 0),
-            Position = UDim2.new(0, 10, 0, 0),
-            BackgroundTransparency = 1,
-            Font = Enum.Font.GothamSemibold,
-            Text = "UI Minimized - Press " .. (window.ToggleKey or "RightShift") .. " to reopen",
-            TextColor3 = Config.Text,
-            TextSize = 12,
-            TextWrapped = true,
-            Parent = NotificationFrame
-        })
-        
-        -- Animate in
-        NotificationFrame.Position = UDim2.new(1, 10, 1, -70)
-        Tween(NotificationFrame, {Position = UDim2.new(1, -310, 1, -70)}, Config.AnimationSpeed)
-        
-        -- Auto remove after 3 seconds
-        wait(3)
-        Tween(NotificationFrame, {Position = UDim2.new(1, 10, 1, -70)}, Config.AnimationSpeed)
-        wait(Config.AnimationSpeed)
-        NotificationFrame:Destroy()
-    end)
-    
-    -- Close Button
-    local CloseButton = CreateElement("TextButton", {
-        Name = "CloseButton",
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(1, -40, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundColor3 = Config.Error,
-        BorderSizePixel = 0,
-        Font = Enum.Font.GothamBold,
-        Text = "×",
-        TextColor3 = Config.Text,
-        TextSize = 20,
-        Parent = TitleBar
-    })
-    AddCorner(CloseButton, UDim.new(0, 6))
-    
-    CloseButton.MouseEnter:Connect(function()
-        Tween(CloseButton, {BackgroundColor3 = Color3.fromRGB(255, 91, 107)}, Config.HoverSpeed)
-    end)
-    
-    CloseButton.MouseLeave:Connect(function()
-        Tween(CloseButton, {BackgroundColor3 = Config.Error}, Config.HoverSpeed)
-    end)
-    
-    CloseButton.MouseButton1Click:Connect(function()
-        Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, Config.AnimationSpeed)
-        wait(Config.AnimationSpeed)
-        ScreenGui:Destroy()
-    end)
-    
-    -- Tab Container
-    local TabContainer = CreateElement("ScrollingFrame", {
+    -- Tab Container (Top horizontal tabs)
+    local TabContainer = CreateElement("Frame", {
         Name = "TabContainer",
-        Size = UDim2.new(0, 150, 1, -70),
-        Position = UDim2.new(0, 10, 0, 60),
+        Size = UDim2.new(1, -20, 0, 35),
+        Position = UDim2.new(0, 10, 0, 45),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
-        ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.Accent,
-        CanvasSize = UDim2.new(0, 0, 0, 0),
         Parent = MainFrame
     })
     
     local TabLayout = CreateElement("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
         SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 6),
+        Padding = UDim.new(0, 8),
         Parent = TabContainer
     })
-    
-    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
-    end)
     
     -- Content Container
     local ContentContainer = CreateElement("Frame", {
         Name = "ContentContainer",
-        Size = UDim2.new(1, -180, 1, -70),
-        Position = UDim2.new(0, 170, 0, 60),
+        Size = UDim2.new(1, -20, 1, -100),
+        Position = UDim2.new(0, 10, 0, 90),
         BackgroundTransparency = 1,
         Parent = MainFrame
     })
@@ -313,7 +322,7 @@ function NexusUI:CreateWindow(options)
     
     -- Entrance animation
     MainFrame.Size = UDim2.new(0, 0, 0, 0)
-    Tween(MainFrame, {Size = windowSize}, Config.AnimationSpeed * 1.5)
+    Tween(MainFrame, {Size = windowSize}, 0.4)
     
     -- Toggle keybind
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -323,7 +332,7 @@ function NexusUI:CreateWindow(options)
     end)
     
     -- Tab Functions
-    function window:CreateTab(tabName, icon)
+    function window:CreateTab(tabName)
         local tab = {
             Name = tabName,
             Elements = {},
@@ -332,14 +341,14 @@ function NexusUI:CreateWindow(options)
         -- Tab Button
         local TabButton = CreateElement("TextButton", {
             Name = tabName,
-            Size = UDim2.new(1, 0, 0, 40),
+            Size = UDim2.new(0, 90, 0, 28),
             BackgroundColor3 = Config.SecondaryBackground,
+            BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            Font = Enum.Font.GothamSemibold,
-            Text = "  " .. tabName,
+            Font = Enum.Font.Gotham,
+            Text = tabName,
             TextColor3 = Config.SubText,
-            TextSize = 14,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            TextSize = 12,
             Parent = TabContainer
         })
         AddCorner(TabButton, UDim.new(0, 6))
@@ -350,8 +359,9 @@ function NexusUI:CreateWindow(options)
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            ScrollBarThickness = 4,
+            ScrollBarThickness = 3,
             ScrollBarImageColor3 = Config.Accent,
+            ScrollBarImageTransparency = 0.5,
             CanvasSize = UDim2.new(0, 0, 0, 0),
             Visible = false,
             Parent = ContentContainer
@@ -367,29 +377,27 @@ function NexusUI:CreateWindow(options)
             TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
         end)
         
-        AddPadding(TabContent, 10)
+        AddPadding(TabContent, 5)
         
         TabButton.MouseEnter:Connect(function()
             if window.CurrentTab ~= tab then
-                Tween(TabButton, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+                Tween(TabButton, {BackgroundTransparency = 0.3}, Config.HoverSpeed)
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if window.CurrentTab ~= tab then
-                Tween(TabButton, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+                Tween(TabButton, {BackgroundTransparency = 1}, Config.HoverSpeed)
             end
         end)
         
         TabButton.MouseButton1Click:Connect(function()
             for _, t in pairs(window.Tabs) do
-                t.Button.BackgroundColor3 = Config.SecondaryBackground
-                t.Button.TextColor3 = Config.SubText
+                Tween(t.Button, {BackgroundTransparency = 1, TextColor3 = Config.SubText}, Config.AnimationSpeed)
                 t.Content.Visible = false
             end
             
-            TabButton.BackgroundColor3 = Config.Accent
-            TabButton.TextColor3 = Config.Text
+            Tween(TabButton, {BackgroundTransparency = 0.2, TextColor3 = Config.Text}, Config.AnimationSpeed)
             TabContent.Visible = true
             window.CurrentTab = tab
         end)
@@ -397,9 +405,8 @@ function NexusUI:CreateWindow(options)
         tab.Button = TabButton
         tab.Content = TabContent
         
-        -- Auto-select first tab
         if #window.Tabs == 0 then
-            TabButton.BackgroundColor3 = Config.Accent
+            TabButton.BackgroundTransparency = 0.2
             TabButton.TextColor3 = Config.Text
             TabContent.Visible = true
             window.CurrentTab = tab
@@ -416,52 +423,36 @@ function NexusUI:CreateWindow(options)
             local ButtonFrame = CreateElement("Frame", {
                 Size = UDim2.new(1, 0, 0, Config.ButtonHeight),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
-            AddCorner(ButtonFrame)
+            AddCorner(ButtonFrame, UDim.new(0, 6))
             AddStroke(ButtonFrame)
             
             local Button = CreateElement("TextButton", {
-                Size = UDim2.new(1, -20, 1, -10),
-                Position = UDim2.new(0, 10, 0, 5),
+                Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = buttonName,
                 TextColor3 = Config.Text,
-                TextSize = 14,
+                TextSize = 12,
                 Parent = ButtonFrame
             })
-            
-            local Ripple = CreateElement("Frame", {
-                Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0.5, 0, 0.5, 0),
-                AnchorPoint = Vector2.new(0.5, 0.5),
-                BackgroundColor3 = Config.Accent,
-                BackgroundTransparency = 0.5,
-                BorderSizePixel = 0,
-                ZIndex = 2,
-                Parent = ButtonFrame
-            })
-            AddCorner(Ripple, UDim.new(1, 0))
             
             ButtonFrame.MouseEnter:Connect(function()
-                Tween(ButtonFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+                Tween(ButtonFrame, {BackgroundTransparency = 0.1}, Config.HoverSpeed)
             end)
             
             ButtonFrame.MouseLeave:Connect(function()
-                Tween(ButtonFrame, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+                Tween(ButtonFrame, {BackgroundTransparency = Config.SecondaryTransparency}, Config.HoverSpeed)
             end)
             
             Button.MouseButton1Click:Connect(function()
-                Ripple.Size = UDim2.new(0, 0, 0, 0)
-                Ripple.BackgroundTransparency = 0.5
-                
-                Tween(Ripple, {Size = UDim2.new(2, 0, 2, 0), BackgroundTransparency = 1}, 0.5)
-                
-                spawn(function()
-                    callback()
-                end)
+                Tween(ButtonFrame, {BackgroundColor3 = Config.Accent}, 0.1)
+                wait(0.1)
+                Tween(ButtonFrame, {BackgroundColor3 = Config.SecondaryBackground}, 0.1)
+                spawn(callback)
             end)
             
             return ButtonFrame
@@ -477,29 +468,31 @@ function NexusUI:CreateWindow(options)
             local ToggleFrame = CreateElement("Frame", {
                 Size = UDim2.new(1, 0, 0, Config.ToggleSize),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
-            AddCorner(ToggleFrame)
+            AddCorner(ToggleFrame, UDim.new(0, 6))
             AddStroke(ToggleFrame)
             
             local ToggleLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(1, -65, 1, 0),
+                Size = UDim2.new(1, -55, 1, 0),
                 Position = UDim2.new(0, 12, 0, 0),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = toggleName,
                 TextColor3 = Config.Text,
-                TextSize = 14,
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = ToggleFrame
             })
             
             local ToggleButton = CreateElement("TextButton", {
-                Size = UDim2.new(0, 45, 0, 24),
-                Position = UDim2.new(1, -55, 0.5, 0),
+                Size = UDim2.new(0, 40, 0, 20),
+                Position = UDim2.new(1, -48, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Border,
+                BackgroundTransparency = 0.3,
                 BorderSizePixel = 0,
                 Text = "",
                 Parent = ToggleFrame
@@ -507,8 +500,8 @@ function NexusUI:CreateWindow(options)
             AddCorner(ToggleButton, UDim.new(1, 0))
             
             local ToggleCircle = CreateElement("Frame", {
-                Size = UDim2.new(0, 18, 0, 18),
-                Position = UDim2.new(0, 3, 0.5, 0),
+                Size = UDim2.new(0, 16, 0, 16),
+                Position = UDim2.new(0, 2, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
@@ -525,11 +518,11 @@ function NexusUI:CreateWindow(options)
                 end
                 
                 if state then
-                    Tween(ToggleButton, {BackgroundColor3 = Config.Accent}, Config.AnimationSpeed)
-                    Tween(ToggleCircle, {Position = UDim2.new(1, -21, 0.5, 0)}, Config.AnimationSpeed)
+                    Tween(ToggleButton, {BackgroundColor3 = Config.Accent, BackgroundTransparency = 0}, Config.AnimationSpeed)
+                    Tween(ToggleCircle, {Position = UDim2.new(1, -18, 0.5, 0)}, Config.AnimationSpeed)
                 else
-                    Tween(ToggleButton, {BackgroundColor3 = Config.Border}, Config.AnimationSpeed)
-                    Tween(ToggleCircle, {Position = UDim2.new(0, 3, 0.5, 0)}, Config.AnimationSpeed)
+                    Tween(ToggleButton, {BackgroundColor3 = Config.Border, BackgroundTransparency = 0.3}, Config.AnimationSpeed)
+                    Tween(ToggleCircle, {Position = UDim2.new(0, 2, 0.5, 0)}, Config.AnimationSpeed)
                 end
                 
                 spawn(function()
@@ -544,11 +537,11 @@ function NexusUI:CreateWindow(options)
             end)
             
             ToggleFrame.MouseEnter:Connect(function()
-                Tween(ToggleFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+                Tween(ToggleFrame, {BackgroundTransparency = 0.1}, Config.HoverSpeed)
             end)
             
             ToggleFrame.MouseLeave:Connect(function()
-                Tween(ToggleFrame, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+                Tween(ToggleFrame, {BackgroundTransparency = Config.SecondaryTransparency}, Config.HoverSpeed)
             end)
             
             return {
@@ -568,43 +561,44 @@ function NexusUI:CreateWindow(options)
             local callback = options.Callback or function() end
             
             local SliderFrame = CreateElement("Frame", {
-                Size = UDim2.new(1, 0, 0, 55),
+                Size = UDim2.new(1, 0, 0, 50),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
-            AddCorner(SliderFrame)
+            AddCorner(SliderFrame, UDim.new(0, 6))
             AddStroke(SliderFrame)
             
             local SliderLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(1, -70, 0, 20),
-                Position = UDim2.new(0, 12, 0, 8),
+                Size = UDim2.new(1, -60, 0, 20),
+                Position = UDim2.new(0, 12, 0, 6),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = sliderName,
                 TextColor3 = Config.Text,
-                TextSize = 14,
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = SliderFrame
             })
             
             local ValueLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(0, 60, 0, 20),
-                Position = UDim2.new(1, -65, 0, 8),
-                BackgroundColor3 = Config.Background,
-                BorderSizePixel = 0,
+                Size = UDim2.new(0, 50, 0, 20),
+                Position = UDim2.new(1, -58, 0, 6),
+                BackgroundTransparency = 1,
                 Font = Enum.Font.GothamBold,
                 Text = tostring(default),
                 TextColor3 = Config.Accent,
-                TextSize = 13,
+                TextSize = 11,
+                TextXAlignment = Enum.TextXAlignment.Right,
                 Parent = SliderFrame
             })
-            AddCorner(ValueLabel, UDim.new(0, 4))
             
             local SliderBar = CreateElement("Frame", {
                 Size = UDim2.new(1, -24, 0, Config.SliderHeight),
-                Position = UDim2.new(0, 12, 1, -18),
+                Position = UDim2.new(0, 12, 1, -16),
                 BackgroundColor3 = Config.Border,
+                BackgroundTransparency = 0.3,
                 BorderSizePixel = 0,
                 Parent = SliderFrame
             })
@@ -618,13 +612,12 @@ function NexusUI:CreateWindow(options)
             })
             AddCorner(SliderFill, UDim.new(1, 0))
             
-            local SliderButton = CreateElement("TextButton", {
-                Size = UDim2.new(0, 16, 0, 16),
-                Position = UDim2.new(0, -8, 0.5, 0),
+            local SliderButton = CreateElement("Frame", {
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(0, -6, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Text,
                 BorderSizePixel = 0,
-                Text = "",
                 ZIndex = 2,
                 Parent = SliderFill
             })
@@ -710,11 +703,12 @@ function NexusUI:CreateWindow(options)
             local DropdownFrame = CreateElement("Frame", {
                 Size = UDim2.new(1, 0, 0, Config.DropdownHeight),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent,
                 ClipsDescendants = true,
             })
-            AddCorner(DropdownFrame)
+            AddCorner(DropdownFrame, UDim.new(0, 6))
             AddStroke(DropdownFrame)
             
             local DropdownButton = CreateElement("TextButton", {
@@ -726,43 +720,43 @@ function NexusUI:CreateWindow(options)
             })
             
             local DropdownLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(1, -40, 1, 0),
+                Size = UDim2.new(1, -90, 1, 0),
                 Position = UDim2.new(0, 12, 0, 0),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = dropdownName,
                 TextColor3 = Config.Text,
-                TextSize = 14,
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = DropdownButton
             })
             
             local DropdownValue = CreateElement("TextLabel", {
-                Size = UDim2.new(0, 100, 1, 0),
-                Position = UDim2.new(1, -110, 0, 0),
+                Size = UDim2.new(0, 80, 1, 0),
+                Position = UDim2.new(1, -90, 0, 0),
                 BackgroundTransparency = 1,
-                Font = Enum.Font.GothamBold,
+                Font = Enum.Font.Gotham,
                 Text = default,
-                TextColor3 = Config.Accent,
-                TextSize = 13,
+                TextColor3 = Config.SubText,
+                TextSize = 11,
                 TextXAlignment = Enum.TextXAlignment.Right,
                 Parent = DropdownButton
             })
             
             local Arrow = CreateElement("TextLabel", {
                 Size = UDim2.new(0, 20, 1, 0),
-                Position = UDim2.new(1, -25, 0, 0),
+                Position = UDim2.new(1, -20, 0, 0),
                 BackgroundTransparency = 1,
-                Font = Enum.Font.GothamBold,
+                Font = Enum.Font.Gotham,
                 Text = "▼",
                 TextColor3 = Config.SubText,
-                TextSize = 10,
+                TextSize = 8,
                 Parent = DropdownButton
             })
             
             local ItemsContainer = CreateElement("Frame", {
-                Size = UDim2.new(1, -20, 0, 0),
-                Position = UDim2.new(0, 10, 0, Config.DropdownHeight + 5),
+                Size = UDim2.new(1, -16, 0, 0),
+                Position = UDim2.new(0, 8, 0, Config.DropdownHeight + 4),
                 BackgroundTransparency = 1,
                 Parent = DropdownFrame
             })
@@ -778,24 +772,24 @@ function NexusUI:CreateWindow(options)
             
             for _, item in ipairs(items) do
                 local ItemButton = CreateElement("TextButton", {
-                    Size = UDim2.new(1, 0, 0, 28),
+                    Size = UDim2.new(1, 0, 0, 26),
                     BackgroundColor3 = Config.Background,
+                    BackgroundTransparency = 0.3,
                     BorderSizePixel = 0,
                     Font = Enum.Font.Gotham,
-                    Text = "  " .. item,
+                    Text = item,
                     TextColor3 = Config.Text,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextSize = 11,
                     Parent = ItemsContainer
                 })
                 AddCorner(ItemButton, UDim.new(0, 4))
                 
                 ItemButton.MouseEnter:Connect(function()
-                    Tween(ItemButton, {BackgroundColor3 = Config.Accent}, Config.HoverSpeed)
+                    Tween(ItemButton, {BackgroundColor3 = Config.Accent, BackgroundTransparency = 0.1}, Config.HoverSpeed)
                 end)
                 
                 ItemButton.MouseLeave:Connect(function()
-                    Tween(ItemButton, {BackgroundColor3 = Config.Background}, Config.HoverSpeed)
+                    Tween(ItemButton, {BackgroundColor3 = Config.Background, BackgroundTransparency = 0.3}, Config.HoverSpeed)
                 end)
                 
                 ItemButton.MouseButton1Click:Connect(function()
@@ -810,7 +804,6 @@ function NexusUI:CreateWindow(options)
                         callback(item)
                     end)
                     
-                    -- Close dropdown
                     isOpen = false
                     Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, Config.DropdownHeight)}, Config.AnimationSpeed)
                     Tween(Arrow, {Rotation = 0}, Config.AnimationSpeed)
@@ -821,7 +814,7 @@ function NexusUI:CreateWindow(options)
                 isOpen = not isOpen
                 
                 if isOpen then
-                    local totalHeight = Config.DropdownHeight + 5 + (#items * 30)
+                    local totalHeight = Config.DropdownHeight + 4 + (#items * 28)
                     Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, totalHeight)}, Config.AnimationSpeed)
                     Tween(Arrow, {Rotation = 180}, Config.AnimationSpeed)
                 else
@@ -832,13 +825,13 @@ function NexusUI:CreateWindow(options)
             
             DropdownFrame.MouseEnter:Connect(function()
                 if not isOpen then
-                    Tween(DropdownFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+                    Tween(DropdownFrame, {BackgroundTransparency = 0.1}, Config.HoverSpeed)
                 end
             end)
             
             DropdownFrame.MouseLeave:Connect(function()
                 if not isOpen then
-                    Tween(DropdownFrame, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+                    Tween(DropdownFrame, {BackgroundTransparency = Config.SecondaryTransparency}, Config.HoverSpeed)
                 end
             end)
             
@@ -866,36 +859,37 @@ function NexusUI:CreateWindow(options)
             local callback = options.Callback or function() end
             
             local TextboxFrame = CreateElement("Frame", {
-                Size = UDim2.new(1, 0, 0, 44),
+                Size = UDim2.new(1, 0, 0, 40),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
-            AddCorner(TextboxFrame)
+            AddCorner(TextboxFrame, UDim.new(0, 6))
             AddStroke(TextboxFrame)
             
             local TextboxLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(1, -20, 0, 20),
-                Position = UDim2.new(0, 10, 0, 4),
+                Size = UDim2.new(1, -20, 0, 18),
+                Position = UDim2.new(0, 10, 0, 3),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = textboxName,
-                TextColor3 = Config.Text,
-                TextSize = 13,
+                TextColor3 = Config.SubText,
+                TextSize = 10,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = TextboxFrame
             })
             
             local Textbox = CreateElement("TextBox", {
-                Size = UDim2.new(1, -20, 0, 20),
-                Position = UDim2.new(0, 10, 1, -24),
+                Size = UDim2.new(1, -20, 0, 18),
+                Position = UDim2.new(0, 10, 1, -21),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 PlaceholderText = placeholder,
                 PlaceholderColor3 = Config.SubText,
                 Text = default,
-                TextColor3 = Config.Accent,
-                TextSize = 13,
+                TextColor3 = Config.Text,
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 ClearTextOnFocus = false,
                 Parent = TextboxFrame
@@ -931,39 +925,41 @@ function NexusUI:CreateWindow(options)
             local callback = options.Callback or function() end
             
             local KeybindFrame = CreateElement("Frame", {
-                Size = UDim2.new(1, 0, 0, 44),
+                Size = UDim2.new(1, 0, 0, 40),
                 BackgroundColor3 = Config.SecondaryBackground,
+                BackgroundTransparency = Config.SecondaryTransparency,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
-            AddCorner(KeybindFrame)
+            AddCorner(KeybindFrame, UDim.new(0, 6))
             AddStroke(KeybindFrame)
             
             local KeybindLabel = CreateElement("TextLabel", {
-                Size = UDim2.new(1, -100, 1, 0),
+                Size = UDim2.new(1, -90, 1, 0),
                 Position = UDim2.new(0, 12, 0, 0),
                 BackgroundTransparency = 1,
                 Font = Enum.Font.Gotham,
                 Text = keybindName,
                 TextColor3 = Config.Text,
-                TextSize = 14,
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = KeybindFrame
             })
             
             local KeybindButton = CreateElement("TextButton", {
-                Size = UDim2.new(0, 80, 0, 28),
-                Position = UDim2.new(1, -90, 0.5, 0),
+                Size = UDim2.new(0, 70, 0, 24),
+                Position = UDim2.new(1, -78, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundColor3 = Config.Background,
+                BackgroundTransparency = 0.3,
                 BorderSizePixel = 0,
-                Font = Enum.Font.GothamBold,
+                Font = Enum.Font.Gotham,
                 Text = default.Name,
                 TextColor3 = Config.Accent,
-                TextSize = 12,
+                TextSize = 10,
                 Parent = KeybindFrame
             })
-            AddCorner(KeybindButton, UDim.new(0, 6))
+            AddCorner(KeybindButton, UDim.new(0, 5))
             AddStroke(KeybindButton, Config.Accent, 1)
             
             local currentKey = default
@@ -982,7 +978,7 @@ function NexusUI:CreateWindow(options)
                 
                 listening = true
                 KeybindButton.Text = "..."
-                KeybindButton.TextColor3 = Config.Warning
+                KeybindButton.TextColor3 = Config.SubText
                 
                 local connection
                 connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1000,7 +996,6 @@ function NexusUI:CreateWindow(options)
                 end)
             end)
             
-            -- Listen for the keybind being pressed
             UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 if not gameProcessed and input.KeyCode == currentKey then
                     spawn(function()
@@ -1010,11 +1005,11 @@ function NexusUI:CreateWindow(options)
             end)
             
             KeybindFrame.MouseEnter:Connect(function()
-                Tween(KeybindFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, Config.HoverSpeed)
+                Tween(KeybindFrame, {BackgroundTransparency = 0.1}, Config.HoverSpeed)
             end)
             
             KeybindFrame.MouseLeave:Connect(function()
-                Tween(KeybindFrame, {BackgroundColor3 = Config.SecondaryBackground}, Config.HoverSpeed)
+                Tween(KeybindFrame, {BackgroundTransparency = Config.SecondaryTransparency}, Config.HoverSpeed)
             end)
             
             UpdateKeybind(default)
@@ -1027,7 +1022,7 @@ function NexusUI:CreateWindow(options)
         
         function tab:AddLabel(text)
             local LabelFrame = CreateElement("Frame", {
-                Size = UDim2.new(1, 0, 0, 30),
+                Size = UDim2.new(1, 0, 0, 24),
                 BackgroundTransparency = 1,
                 Parent = TabContent
             })
@@ -1039,7 +1034,7 @@ function NexusUI:CreateWindow(options)
                 Font = Enum.Font.Gotham,
                 Text = text,
                 TextColor3 = Config.SubText,
-                TextSize = 13,
+                TextSize = 11,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 TextWrapped = true,
                 Parent = LabelFrame
@@ -1054,8 +1049,9 @@ function NexusUI:CreateWindow(options)
         
         function tab:AddDivider()
             local Divider = CreateElement("Frame", {
-                Size = UDim2.new(1, -20, 0, 1),
+                Size = UDim2.new(1, -10, 0, 1),
                 BackgroundColor3 = Config.Border,
+                BackgroundTransparency = 0.5,
                 BorderSizePixel = 0,
                 Parent = TabContent
             })
@@ -1065,6 +1061,45 @@ function NexusUI:CreateWindow(options)
         
         return tab
     end
+    
+    -- Add Interface tab for customization
+    local InterfaceTab = window:CreateTab("Interface")
+    
+    InterfaceTab:AddLabel("UI Customization")
+    InterfaceTab:AddDivider()
+    
+    InterfaceTab:AddToggle({
+        Name = "Acrylic Effect",
+        Default = Config.AcrylicEnabled,
+        Callback = function(value)
+            Config.AcrylicEnabled = value
+        end
+    })
+    
+    InterfaceTab:AddSlider({
+        Name = "Background Opacity",
+        Min = 0,
+        Max = 100,
+        Default = math.floor((1 - Config.BackgroundTransparency) * 100),
+        Increment = 5,
+        Callback = function(value)
+            local transparency = 1 - (value / 100)
+            Config.BackgroundTransparency = transparency
+            MainFrame.BackgroundTransparency = transparency
+        end
+    })
+    
+    InterfaceTab:AddSlider({
+        Name = "Element Opacity",
+        Min = 0,
+        Max = 100,
+        Default = math.floor((1 - Config.SecondaryTransparency) * 100),
+        Increment = 5,
+        Callback = function(value)
+            local transparency = 1 - (value / 100)
+            Config.SecondaryTransparency = transparency
+        end
+    })
     
     -- Configuration Functions
     function window:SaveConfig(name)
