@@ -254,14 +254,17 @@ function Tundra:CreateWindow(config)
     local subtitle = config.Subtitle or "by Creator"
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
     local theme = config.Theme or "Dark"
-    local size = config.Size or (isMobile and UDim2.new(0, 380, 0, 600) or UDim2.new(0, 650, 0, 550))
+    local tabMode = config.TabMode or "Horizontal" -- "Horizontal" or "Vertical"
+    local size = config.Size or (isMobile and UDim2.new(0, 380, 0, 600) or UDim2.new(0, 680, 0, 520))
     
     window.currentTheme = Themes[theme] or Themes.Dark
+    window.tabMode = tabMode
     window.config = {
         Title = title,
         Subtitle = subtitle,
         ToggleKey = toggleKey,
         Theme = theme,
+        TabMode = tabMode,
         Elements = {}
     }
     
@@ -281,7 +284,7 @@ function Tundra:CreateWindow(config)
     MainFrame.Size = size
     MainFrame.Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
     MainFrame.BackgroundColor3 = window.currentTheme.Background
-    MainFrame.BackgroundTransparency = 0.3
+    MainFrame.BackgroundTransparency = 0.15
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
     MainFrame.ClipsDescendants = false
@@ -329,9 +332,9 @@ function Tundra:CreateWindow(config)
     -- Top Bar
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
-    TopBar.Size = UDim2.new(1, 0, 0, 45)
+    TopBar.Size = UDim2.new(1, 0, 0, 50)
     TopBar.BackgroundColor3 = window.currentTheme.TopBar
-    TopBar.BackgroundTransparency = 0.4
+    TopBar.BackgroundTransparency = 0.15
     TopBar.BorderSizePixel = 0
     TopBar.Parent = MainFrame
     TopBar.ZIndex = 2
@@ -351,22 +354,22 @@ function Tundra:CreateWindow(config)
     CornerFix.Size = UDim2.new(1, 0, 0, 12)
     CornerFix.Position = UDim2.new(0, 0, 1, -12)
     CornerFix.BackgroundColor3 = window.currentTheme.TopBar
-    CornerFix.BackgroundTransparency = 0.4
+    CornerFix.BackgroundTransparency = 0.15
     CornerFix.BorderSizePixel = 0
     CornerFix.Parent = TopBar
     CornerFix.ZIndex = 2
     
     -- Title with Icon and Subtitle
     local TitleContainer = Instance.new("Frame")
-    TitleContainer.Size = UDim2.new(1, -120, 1, 0)
+    TitleContainer.Size = UDim2.new(0, 250, 1, 0)
     TitleContainer.Position = UDim2.new(0, 15, 0, 0)
     TitleContainer.BackgroundTransparency = 1
     TitleContainer.Parent = TopBar
     TitleContainer.ZIndex = 3
     
     local TitleIcon = Instance.new("ImageLabel")
-    TitleIcon.Size = UDim2.new(0, 20, 0, 20)
-    TitleIcon.Position = UDim2.new(0, 0, 0.5, -10)
+    TitleIcon.Size = UDim2.new(0, 22, 0, 22)
+    TitleIcon.Position = UDim2.new(0, 0, 0.5, -11)
     TitleIcon.BackgroundTransparency = 1
     TitleIcon.Image = Icons.Menu
     TitleIcon.ImageColor3 = window.currentTheme.Accent
@@ -374,8 +377,8 @@ function Tundra:CreateWindow(config)
     TitleIcon.ZIndex = 3
     
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(0, 200, 0, 20)
-    TitleLabel.Position = UDim2.new(0, 30, 0, 2)
+    TitleLabel.Size = UDim2.new(1, -30, 0, 22)
+    TitleLabel.Position = UDim2.new(0, 30, 0, 5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = title
     TitleLabel.TextColor3 = window.currentTheme.Text
@@ -386,8 +389,8 @@ function Tundra:CreateWindow(config)
     TitleLabel.ZIndex = 3
     
     local SubtitleLabel = Instance.new("TextLabel")
-    SubtitleLabel.Size = UDim2.new(0, 200, 0, 16)
-    SubtitleLabel.Position = UDim2.new(0, 30, 0, 20)
+    SubtitleLabel.Size = UDim2.new(1, -30, 0, 16)
+    SubtitleLabel.Position = UDim2.new(0, 30, 0, 24)
     SubtitleLabel.BackgroundTransparency = 1
     SubtitleLabel.Text = subtitle
     SubtitleLabel.TextColor3 = window.currentTheme.SubText
@@ -461,59 +464,105 @@ function Tundra:CreateWindow(config)
         -- Placeholder for maximize functionality
     end)
     
-    -- Side Bar
-    local SideBar = Instance.new("Frame")
-    SideBar.Name = "SideBar"
-    SideBar.Size = UDim2.new(0, 160, 1, -125)
-    SideBar.Position = UDim2.new(0, 10, 0, 50)
-    SideBar.BackgroundColor3 = window.currentTheme.SideBar
-    SideBar.BackgroundTransparency = 0.5
-    SideBar.BorderSizePixel = 0
-    SideBar.Parent = MainFrame
-    SideBar.ZIndex = 1
+    -- Tab Container (Horizontal or Vertical based on mode)
+    local TabBar = Instance.new("Frame")
+    TabBar.Name = "TabBar"
+    TabBar.BackgroundColor3 = window.currentTheme.SideBar
+    TabBar.BackgroundTransparency = 0.15
+    TabBar.BorderSizePixel = 0
+    TabBar.Parent = MainFrame
+    TabBar.ZIndex = 1
     
-    local SideBarCorner = Instance.new("UICorner")
-    SideBarCorner.CornerRadius = UDim.new(0, 8)
-    SideBarCorner.Parent = SideBar
+    if tabMode == "Horizontal" then
+        TabBar.Size = UDim2.new(1, -20, 0, 45)
+        TabBar.Position = UDim2.new(0, 10, 0, 60)
+    else
+        TabBar.Size = UDim2.new(0, 160, 1, -125)
+        TabBar.Position = UDim2.new(0, 10, 0, 60)
+    end
     
-    local SideBarStroke = Instance.new("UIStroke")
-    SideBarStroke.Color = window.currentTheme.Border
-    SideBarStroke.Thickness = 1
-    SideBarStroke.Transparency = 0.8
-    SideBarStroke.Parent = SideBar
+    local TabBarCorner = Instance.new("UICorner")
+    TabBarCorner.CornerRadius = UDim.new(0, 8)
+    TabBarCorner.Parent = TabBar
+    
+    local TabBarStroke = Instance.new("UIStroke")
+    TabBarStroke.Color = window.currentTheme.Border
+    TabBarStroke.Thickness = 1
+    TabBarStroke.Transparency = 0.8
+    TabBarStroke.Parent = TabBar
     
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(1, -10, 1, -10)
-    TabContainer.Position = UDim2.new(0, 5, 0, 5)
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
     TabContainer.ScrollBarThickness = 4
     TabContainer.ScrollBarImageColor3 = window.currentTheme.Accent
-    TabContainer.Parent = SideBar
-    TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabContainer.Parent = TabBar
     TabContainer.ZIndex = 2
+    
+    if tabMode == "Horizontal" then
+        TabContainer.Size = UDim2.new(1, -10, 1, -10)
+        TabContainer.Position = UDim2.new(0, 5, 0, 5)
+        TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
+    else
+        TabContainer.Size = UDim2.new(1, -10, 1, -10)
+        TabContainer.Position = UDim2.new(0, 5, 0, 5)
+        TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+    end
     
     local TabList = Instance.new("UIListLayout")
     TabList.SortOrder = Enum.SortOrder.LayoutOrder
     TabList.Padding = UDim.new(0, 8)
     TabList.Parent = TabContainer
     
+    if tabMode == "Horizontal" then
+        TabList.FillDirection = Enum.FillDirection.Horizontal
+    else
+        TabList.FillDirection = Enum.FillDirection.Vertical
+    end
+    
     TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 10)
+        if tabMode == "Horizontal" then
+            TabContainer.CanvasSize = UDim2.new(0, TabList.AbsoluteContentSize.X + 10, 0, 0)
+        else
+            TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 10)
+        end
     end)
+    
+    -- Content Container
+    local ContentContainer = Instance.new("Frame")
+    ContentContainer.Name = "ContentContainer"
+    ContentContainer.BackgroundTransparency = 1
+    ContentContainer.Parent = MainFrame
+    ContentContainer.ZIndex = 1
+    
+    if tabMode == "Horizontal" then
+        ContentContainer.Size = UDim2.new(1, -20, 1, -185)
+        ContentContainer.Position = UDim2.new(0, 10, 0, 115)
+    else
+        ContentContainer.Size = UDim2.new(1, -190, 1, -135)
+        ContentContainer.Position = UDim2.new(0, 180, 0, 115)
+    end
     
     -- User Profile Section at bottom
     local LocalPlayer = Players.LocalPlayer
     local ProfileSection = Instance.new("Frame")
     ProfileSection.Name = "ProfileSection"
-    ProfileSection.Size = UDim2.new(0, 160, 0, 60)
-    ProfileSection.Position = UDim2.new(0, 10, 1, -70)
     ProfileSection.BackgroundColor3 = window.currentTheme.Element
-    ProfileSection.BackgroundTransparency = 0.5
+    ProfileSection.BackgroundTransparency = 0.15
     ProfileSection.BorderSizePixel = 0
     ProfileSection.Parent = MainFrame
     ProfileSection.ZIndex = 1
+    
+    if tabMode == "Horizontal" then
+        ProfileSection.Size = UDim2.new(0, 160, 0, 60)
+        ProfileSection.Position = UDim2.new(0, 10, 1, -70)
+    else
+        ProfileSection.Size = UDim2.new(0, 160, 0, 60)
+        ProfileSection.Position = UDim2.new(0, 10, 1, -70)
+    end
     
     local ProfileCorner = Instance.new("UICorner")
     ProfileCorner.CornerRadius = UDim.new(0, 8)
@@ -530,7 +579,7 @@ function Tundra:CreateWindow(config)
     UserAvatar.Size = UDim2.new(0, 40, 0, 40)
     UserAvatar.Position = UDim2.new(0, 10, 0.5, -20)
     UserAvatar.BackgroundColor3 = window.currentTheme.Background
-    UserAvatar.BackgroundTransparency = 0.3
+    UserAvatar.BackgroundTransparency = 0.15
     UserAvatar.BorderSizePixel = 0
     UserAvatar.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
     UserAvatar.Parent = ProfileSection
@@ -573,6 +622,57 @@ function Tundra:CreateWindow(config)
     DisplayName.TextTruncate = Enum.TextTruncate.AtEnd
     DisplayName.Parent = ProfileSection
     DisplayName.ZIndex = 2
+    
+    -- Tab Mode Toggle Button
+    local TabModeToggle = Instance.new("TextButton")
+    TabModeToggle.Name = "TabModeToggle"
+    TabModeToggle.Size = UDim2.new(0, 35, 0, 35)
+    TabModeToggle.Position = UDim2.new(1, -45, 0.5, -17.5)
+    TabModeToggle.BackgroundColor3 = window.currentTheme.Element
+    TabModeToggle.BackgroundTransparency = 0.15
+    TabModeToggle.BorderSizePixel = 0
+    TabModeToggle.Text = ""
+    TabModeToggle.Parent = TopBar
+    TabModeToggle.ZIndex = 3
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = TabModeToggle
+    
+    local ToggleStroke = Instance.new("UIStroke")
+    ToggleStroke.Color = window.currentTheme.Border
+    ToggleStroke.Thickness = 1
+    ToggleStroke.Transparency = 0.8
+    ToggleStroke.Parent = TabModeToggle
+    
+    local ToggleIcon = Instance.new("ImageLabel")
+    ToggleIcon.Size = UDim2.new(0, 20, 0, 20)
+    ToggleIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
+    ToggleIcon.BackgroundTransparency = 1
+    ToggleIcon.Image = tabMode == "Horizontal" and Icons.Menu or Icons.Menu
+    ToggleIcon.ImageColor3 = window.currentTheme.Accent
+    ToggleIcon.Parent = TabModeToggle
+    ToggleIcon.ZIndex = 4
+    
+    TabModeToggle.MouseButton1Click:Connect(function()
+        window.tabMode = window.tabMode == "Horizontal" and "Vertical" or "Horizontal"
+        window.config.TabMode = window.tabMode
+        
+        -- Recreate the UI with new tab mode
+        ScreenBlur:Destroy()
+        ScreenGui:Destroy()
+        
+        local newWindow = Tundra:CreateWindow({
+            Title = window.config.Title,
+            Subtitle = window.config.Subtitle,
+            ToggleKey = window.config.ToggleKey,
+            Theme = window.config.Theme,
+            TabMode = window.tabMode,
+            Size = size
+        })
+        
+        SaveConfig(title, window.config)
+    end)
     
     -- Content Container
     local ContentContainer = Instance.new("Frame")
@@ -673,13 +773,18 @@ function Tundra:CreateWindow(config)
         -- Tab Button
         local TabButton = Instance.new("TextButton")
         TabButton.Name = name
-        TabButton.Size = UDim2.new(1, 0, 0, 38)
         TabButton.BackgroundColor3 = window.currentTheme.Element
-        TabButton.BackgroundTransparency = 0.6
+        TabButton.BackgroundTransparency = 0.15
         TabButton.BorderSizePixel = 0
         TabButton.Text = ""
         TabButton.Parent = TabContainer
         TabButton.ZIndex = 3
+        
+        if window.tabMode == "Horizontal" then
+            TabButton.Size = UDim2.new(0, 120, 1, -10)
+        else
+            TabButton.Size = UDim2.new(1, 0, 0, 38)
+        end
         
         local TabCorner = Instance.new("UICorner")
         TabCorner.CornerRadius = UDim.new(0, 8)
@@ -693,18 +798,22 @@ function Tundra:CreateWindow(config)
         
         -- Icon
         local TabIcon = Instance.new("ImageLabel")
-        TabIcon.Size = UDim2.new(0, 18, 0, 18)
-        TabIcon.Position = UDim2.new(0, 10, 0.5, -9)
         TabIcon.BackgroundTransparency = 1
         TabIcon.Image = icon
         TabIcon.ImageColor3 = window.currentTheme.SubText
         TabIcon.Parent = TabButton
         TabIcon.ZIndex = 4
         
+        if window.tabMode == "Horizontal" then
+            TabIcon.Size = UDim2.new(0, 16, 0, 16)
+            TabIcon.Position = UDim2.new(0, 10, 0.5, -8)
+        else
+            TabIcon.Size = UDim2.new(0, 18, 0, 18)
+            TabIcon.Position = UDim2.new(0, 10, 0.5, -9)
+        end
+        
         -- Label
         local TabLabel = Instance.new("TextLabel")
-        TabLabel.Size = UDim2.new(1, -40, 1, 0)
-        TabLabel.Position = UDim2.new(0, 35, 0, 0)
         TabLabel.BackgroundTransparency = 1
         TabLabel.Text = name
         TabLabel.TextColor3 = window.currentTheme.SubText
@@ -713,6 +822,14 @@ function Tundra:CreateWindow(config)
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         TabLabel.Parent = TabButton
         TabLabel.ZIndex = 4
+        
+        if window.tabMode == "Horizontal" then
+            TabLabel.Size = UDim2.new(1, -35, 1, 0)
+            TabLabel.Position = UDim2.new(0, 32, 0, 0)
+        else
+            TabLabel.Size = UDim2.new(1, -40, 1, 0)
+            TabLabel.Position = UDim2.new(0, 35, 0, 0)
+        end
         
         -- Tab Content
         local TabContent = Instance.new("ScrollingFrame")
@@ -739,7 +856,7 @@ function Tundra:CreateWindow(config)
         TabButton.MouseButton1Click:Connect(function()
             for _, t in pairs(window.tabs) do
                 t.content.Visible = false
-                CreateTween(t.button, {BackgroundTransparency = 0.6})
+                CreateTween(t.button, {BackgroundTransparency = 0.15})
                 CreateTween(t.label, {TextColor3 = window.currentTheme.SubText})
                 if t.icon then
                     CreateTween(t.icon, {ImageColor3 = window.currentTheme.SubText})
@@ -748,25 +865,25 @@ function Tundra:CreateWindow(config)
             
             TabContent.Visible = true
             window.currentTab = tab
-            CreateTween(TabButton, {BackgroundTransparency = 0.3})
+            CreateTween(TabButton, {BackgroundTransparency = 0.0})
             CreateTween(TabLabel, {TextColor3 = window.currentTheme.Text})
             CreateTween(TabIcon, {ImageColor3 = window.currentTheme.Accent})
         end)
         
         TabButton.MouseEnter:Connect(function()
             if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.4})
+                CreateTween(TabButton, {BackgroundTransparency = 0.05})
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.6})
+                CreateTween(TabButton, {BackgroundTransparency = 0.15})
             end
         end)
         
         if not window.currentTab then
-            TabButton.BackgroundTransparency = 0.3
+            TabButton.BackgroundTransparency = 0.0
             TabLabel.TextColor3 = window.currentTheme.Text
             TabIcon.ImageColor3 = window.currentTheme.Accent
             TabContent.Visible = true
@@ -784,9 +901,9 @@ function Tundra:CreateWindow(config)
             
             local Button = Instance.new("TextButton")
             Button.Name = text
-            Button.Size = UDim2.new(1, -10, 0, 42)
+            Button.Size = UDim2.new(1, -5, 0, 40)
             Button.BackgroundColor3 = window.currentTheme.Element
-            Button.BackgroundTransparency = 0.6
+            Button.BackgroundTransparency = 0.15
             Button.BorderSizePixel = 0
             Button.Text = ""
             Button.Parent = TabContent
@@ -824,20 +941,20 @@ function Tundra:CreateWindow(config)
             ButtonLabel.ZIndex = 4
             
             Button.MouseEnter:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.4})
+                CreateTween(Button, {BackgroundTransparency = 0.05})
                 CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Text})
             end)
             
             Button.MouseLeave:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.6})
+                CreateTween(Button, {BackgroundTransparency = 0.15})
                 CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Accent})
             end)
             
             Button.MouseButton1Click:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.3}, 0.1)
+                CreateTween(Button, {BackgroundTransparency = 0.0}, 0.1)
                 CreateTween(ButtonIcon, {Size = UDim2.new(0, 24, 0, 24)}, 0.1)
                 wait(0.1)
-                CreateTween(Button, {BackgroundTransparency = 0.6}, 0.2)
+                CreateTween(Button, {BackgroundTransparency = 0.15}, 0.2)
                 CreateTween(ButtonIcon, {Size = UDim2.new(0, 20, 0, 20)}, 0.2)
                 if callback then
                     pcall(callback)
@@ -854,9 +971,9 @@ function Tundra:CreateWindow(config)
             
             local ToggleFrame = Instance.new("Frame")
             ToggleFrame.Name = text
-            ToggleFrame.Size = UDim2.new(1, -10, 0, 42)
+            ToggleFrame.Size = UDim2.new(1, -5, 0, 40)
             ToggleFrame.BackgroundColor3 = window.currentTheme.Element
-            ToggleFrame.BackgroundTransparency = risky and 0.5 or 0.6
+            ToggleFrame.BackgroundTransparency = 0.15
             ToggleFrame.BorderSizePixel = 0
             ToggleFrame.Parent = TabContent
             ToggleFrame.ZIndex = 3
@@ -979,9 +1096,9 @@ function Tundra:CreateWindow(config)
             
             local SliderFrame = Instance.new("Frame")
             SliderFrame.Name = text
-            SliderFrame.Size = UDim2.new(1, -10, 0, 65)
+            SliderFrame.Size = UDim2.new(1, -5, 0, 60)
             SliderFrame.BackgroundColor3 = window.currentTheme.Element
-            SliderFrame.BackgroundTransparency = 0.6
+            SliderFrame.BackgroundTransparency = 0.15
             SliderFrame.BorderSizePixel = 0
             SliderFrame.Parent = TabContent
             SliderFrame.ZIndex = 3
@@ -1107,9 +1224,9 @@ function Tundra:CreateWindow(config)
             
             local DropdownFrame = Instance.new("Frame")
             DropdownFrame.Name = text
-            DropdownFrame.Size = UDim2.new(1, -10, 0, 45)
+            DropdownFrame.Size = UDim2.new(1, -5, 0, 40)
             DropdownFrame.BackgroundColor3 = window.currentTheme.Element
-            DropdownFrame.BackgroundTransparency = 0.6
+            DropdownFrame.BackgroundTransparency = 0.15
             DropdownFrame.BorderSizePixel = 0
             DropdownFrame.ClipsDescendants = true
             DropdownFrame.Parent = TabContent
@@ -1181,7 +1298,7 @@ function Tundra:CreateWindow(config)
                 local OptionButton = Instance.new("TextButton")
                 OptionButton.Size = UDim2.new(1, 0, 0, 35)
                 OptionButton.BackgroundColor3 = window.currentTheme.Background
-                OptionButton.BackgroundTransparency = 0.5
+                OptionButton.BackgroundTransparency = 0.15
                 OptionButton.BorderSizePixel = 0
                 OptionButton.Text = option
                 OptionButton.TextColor3 = window.currentTheme.SubText
@@ -1191,17 +1308,17 @@ function Tundra:CreateWindow(config)
                 OptionButton.ZIndex = 5
                 
                 OptionButton.MouseEnter:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.3, TextColor3 = window.currentTheme.Text})
+                    CreateTween(OptionButton, {BackgroundTransparency = 0.15, TextColor3 = window.currentTheme.Text})
                 end)
                 
                 OptionButton.MouseLeave:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.5, TextColor3 = window.currentTheme.SubText})
+                    CreateTween(OptionButton, {BackgroundTransparency = 0.15, TextColor3 = window.currentTheme.SubText})
                 end)
                 
                 OptionButton.MouseButton1Click:Connect(function()
                     DropdownLabel.Text = text .. ": " .. option
                     isOpen = false
-                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -10, 0, 45)})
+                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -5, 0, 40)})
                     CreateTween(DropdownArrow, {Rotation = 0})
                     
                     window.config.Elements[text] = option
@@ -1221,7 +1338,7 @@ function Tundra:CreateWindow(config)
                     CreateTween(DropdownFrame, {Size = UDim2.new(1, -10, 0, 45 + contentHeight)}, 0.3)
                     CreateTween(DropdownArrow, {Rotation = 180}, 0.3)
                 else
-                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -10, 0, 45)}, 0.3)
+                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -5, 0, 40)}, 0.3)
                     CreateTween(DropdownArrow, {Rotation = 0}, 0.3)
                 end
             end)
@@ -1232,9 +1349,9 @@ function Tundra:CreateWindow(config)
         function tab:AddColorPicker(text, defaultColor, callback)
             local ColorFrame = Instance.new("Frame")
             ColorFrame.Name = text
-            ColorFrame.Size = UDim2.new(1, -10, 0, 45)
+            ColorFrame.Size = UDim2.new(1, -5, 0, 40)
             ColorFrame.BackgroundColor3 = window.currentTheme.Element
-            ColorFrame.BackgroundTransparency = 0.6
+            ColorFrame.BackgroundTransparency = 0.15
             ColorFrame.BorderSizePixel = 0
             ColorFrame.ClipsDescendants = true
             ColorFrame.Parent = TabContent
@@ -1304,7 +1421,7 @@ function Tundra:CreateWindow(config)
             PickerPanel.Size = UDim2.new(1, -20, 0, 200)
             PickerPanel.Position = UDim2.new(0, 10, 0, 50)
             PickerPanel.BackgroundColor3 = window.currentTheme.Background
-            PickerPanel.BackgroundTransparency = 0.4
+            PickerPanel.BackgroundTransparency = 0.15
             PickerPanel.BorderSizePixel = 0
             PickerPanel.Visible = false
             PickerPanel.Parent = ColorFrame
@@ -1438,7 +1555,7 @@ function Tundra:CreateWindow(config)
                 if isOpen then
                     CreateTween(ColorFrame, {Size = UDim2.new(1, -10, 0, 260)}, 0.3)
                 else
-                    CreateTween(ColorFrame, {Size = UDim2.new(1, -10, 0, 45)}, 0.3)
+                    CreateTween(ColorFrame, {Size = UDim2.new(1, -5, 0, 40)}, 0.3)
                 end
             end)
             
@@ -1544,9 +1661,9 @@ function Tundra:CreateWindow(config)
         function tab:AddKeybind(text, default, callback)
             local KeybindFrame = Instance.new("Frame")
             KeybindFrame.Name = text
-            KeybindFrame.Size = UDim2.new(1, -10, 0, 45)
+            KeybindFrame.Size = UDim2.new(1, -5, 0, 40)
             KeybindFrame.BackgroundColor3 = window.currentTheme.Element
-            KeybindFrame.BackgroundTransparency = 0.6
+            KeybindFrame.BackgroundTransparency = 0.15
             KeybindFrame.BorderSizePixel = 0
             KeybindFrame.Parent = TabContent
             KeybindFrame.ZIndex = 3
@@ -1586,7 +1703,7 @@ function Tundra:CreateWindow(config)
             KeybindButton.Size = UDim2.new(0, 100, 0, 32)
             KeybindButton.Position = UDim2.new(1, -110, 0.5, -16)
             KeybindButton.BackgroundColor3 = window.currentTheme.Background
-            KeybindButton.BackgroundTransparency = 0.5
+            KeybindButton.BackgroundTransparency = 0.15
             KeybindButton.BorderSizePixel = 0
             KeybindButton.Text = default and default.Name or "None"
             KeybindButton.TextColor3 = window.currentTheme.Text
