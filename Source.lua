@@ -439,7 +439,44 @@ function NexusUI:CreateWindow(options)
     })
     AddCorner(MainFrame, UDim.new(0, 14))
     AddStroke(MainFrame, Config.Border, 1)
-    AddBlur(MainFrame)
+    
+    -- Enhanced Blur Background
+    local BackdropBlur = CreateElement("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Config.Background,
+        BackgroundTransparency = 0.4,
+        BorderSizePixel = 0,
+        ZIndex = 0,
+        Parent = MainFrame
+    })
+    AddCorner(BackdropBlur, UDim.new(0, 14))
+    
+    -- Glass effect overlay
+    local GlassOverlay = CreateElement("ImageLabel", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://8992230677",
+        ImageColor3 = Config.Background,
+        ImageTransparency = 0.5,
+        ScaleType = Enum.ScaleType.Tile,
+        TileSize = UDim2.new(0, 100, 0, 100),
+        ZIndex = 0,
+        Parent = MainFrame
+    })
+    AddCorner(GlassOverlay, UDim.new(0, 14))
+    
+    -- Noise texture for depth
+    local NoiseTexture = CreateElement("ImageLabel", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://16864939338",
+        ImageTransparency = 0.95,
+        ScaleType = Enum.ScaleType.Tile,
+        TileSize = UDim2.new(0, 200, 0, 200),
+        ZIndex = 0,
+        Parent = MainFrame
+    })
+    AddCorner(NoiseTexture, UDim.new(0, 14))
     
     -- Title Bar
     local TitleBar = CreateElement("Frame", {
@@ -546,117 +583,116 @@ function NexusUI:CreateWindow(options)
         Parent = TitleBar
     })
     
-    -- Status Bar (if enabled)
+    -- Status Bar (if enabled) - Positioned BELOW main frame
     local StatusBar, UsernameLabel, FPSLabel, PingLabel, DateLabel, TimeLabel
-    local statusBarHeight = 0
+    local StatusBarFrame
     
     if showStatusBar then
-        statusBarHeight = 28
-        
-        StatusBar = CreateElement("Frame", {
-            Name = "StatusBar",
-            Size = UDim2.new(1, -20, 0, 24),
-            Position = UDim2.new(0, 10, 0, 42),
+        StatusBarFrame = CreateElement("Frame", {
+            Name = "StatusBarContainer",
+            Size = UDim2.new(0, windowSize.X.Offset, 0, 32),
+            Position = UDim2.new(0.5, 0, 0.5, windowSize.Y.Offset / 2 + 6),
+            AnchorPoint = Vector2.new(0.5, 0),
             BackgroundColor3 = Config.SecondaryBackground,
             BackgroundTransparency = Config.SecondaryTransparency,
             BorderSizePixel = 0,
-            Parent = MainFrame
+            Parent = ScreenGui
         })
-        AddCorner(StatusBar, UDim.new(0, 6))
-        AddStroke(StatusBar, Config.Border, 1)
+        AddCorner(StatusBarFrame, UDim.new(0, 10))
+        AddStroke(StatusBarFrame, Config.Border, 1)
+        AddBlur(StatusBarFrame)
         
         -- Username
         UsernameLabel = CreateElement("TextLabel", {
-            Size = UDim2.new(0, 100, 1, 0),
-            Position = UDim2.new(0, 8, 0, 0),
+            Size = UDim2.new(0, 120, 1, 0),
+            Position = UDim2.new(0, 12, 0, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.GothamBold,
-            Text = "👤 " .. LocalPlayer.Name,
+            Text = LocalPlayer.Name,
             TextColor3 = Config.Accent,
-            TextSize = 10,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = StatusBar
+            Parent = StatusBarFrame
         })
         CreateGradient(UsernameLabel, Config.Accent, Config.AccentSecondary)
         
         -- FPS
         FPSLabel = CreateElement("TextLabel", {
-            Size = UDim2.new(0, 60, 1, 0),
-            Position = UDim2.new(0, 115, 0, 0),
+            Size = UDim2.new(0, 70, 1, 0),
+            Position = UDim2.new(0, 140, 0, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.Gotham,
-            Text = "📊 " .. GetFPS() .. " FPS",
+            Text = GetFPS() .. " FPS",
             TextColor3 = Config.Text,
-            TextSize = 9,
+            TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = StatusBar
+            Parent = StatusBarFrame
         })
         
         -- Ping
         PingLabel = CreateElement("TextLabel", {
             Size = UDim2.new(0, 70, 1, 0),
-            Position = UDim2.new(0, 180, 0, 0),
+            Position = UDim2.new(0, 220, 0, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.Gotham,
-            Text = "📡 " .. GetPing() .. "ms",
+            Text = GetPing() .. "ms",
             TextColor3 = Config.Text,
-            TextSize = 9,
+            TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = StatusBar
+            Parent = StatusBarFrame
         })
         
         -- Date
         DateLabel = CreateElement("TextLabel", {
-            Size = UDim2.new(0, 80, 1, 0),
-            Position = UDim2.new(0, 255, 0, 0),
+            Size = UDim2.new(0, 85, 1, 0),
+            Position = UDim2.new(0, 300, 0, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.Gotham,
-            Text = "📅 " .. GetDate(),
+            Text = GetDate(),
             TextColor3 = Config.SubText,
-            TextSize = 9,
+            TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = StatusBar
+            Parent = StatusBarFrame
         })
         
         -- Time
         TimeLabel = CreateElement("TextLabel", {
-            Size = UDim2.new(0, 70, 1, 0),
-            Position = UDim2.new(1, -75, 0, 0),
+            Size = UDim2.new(0, 75, 1, 0),
+            Position = UDim2.new(1, -85, 0, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.Gotham,
-            Text = "🕐 " .. GetTime(),
+            Text = GetTime(),
             TextColor3 = Config.SubText,
-            TextSize = 9,
+            TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Right,
-            Parent = StatusBar
+            Parent = StatusBarFrame
         })
         
         -- Update status bar every second
         spawn(function()
-            while StatusBar and StatusBar.Parent do
+            while StatusBarFrame and StatusBarFrame.Parent do
                 wait(1)
                 if FPSLabel then
-                    FPSLabel.Text = "📊 " .. GetFPS() .. " FPS"
+                    FPSLabel.Text = GetFPS() .. " FPS"
                 end
                 if PingLabel then
-                    PingLabel.Text = "📡 " .. GetPing() .. "ms"
+                    PingLabel.Text = GetPing() .. "ms"
                 end
                 if TimeLabel then
-                    TimeLabel.Text = "🕐 " .. GetTime()
+                    TimeLabel.Text = GetTime()
                 end
                 if DateLabel then
-                    DateLabel.Text = "📅 " .. GetDate()
+                    DateLabel.Text = GetDate()
                 end
             end
         end)
     end
     
     -- Tab Container
-    local tabContainerY = 45 + statusBarHeight
     local TabContainer = CreateElement("ScrollingFrame", {
         Name = "TabContainer",
         Size = UDim2.new(1, -20, 0, 35),
-        Position = UDim2.new(0, 10, 0, tabContainerY),
+        Position = UDim2.new(0, 10, 0, 45),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         ScrollBarThickness = 4,
@@ -695,12 +731,10 @@ function NexusUI:CreateWindow(options)
     end)
     
     -- Content Container
-    local contentY = 90 + statusBarHeight
-    local contentHeight = windowSize.Y.Offset - contentY - 10
     local ContentContainer = CreateElement("Frame", {
         Name = "ContentContainer",
-        Size = UDim2.new(1, -20, 0, contentHeight),
-        Position = UDim2.new(0, 10, 0, contentY),
+        Size = UDim2.new(1, -20, 1, -100),
+        Position = UDim2.new(0, 10, 0, 90),
         BackgroundTransparency = 1,
         Parent = MainFrame
     })
@@ -787,8 +821,67 @@ function NexusUI:CreateWindow(options)
         
         -- Update Main Frame
         Tween(MainFrame, {BackgroundColor3 = Config.Background}, 0.3)
+        Tween(BackdropBlur, {BackgroundColor3 = Config.Background}, 0.3)
+        Tween(GlassOverlay, {ImageColor3 = Config.Background}, 0.3)
         
-        -- Update all UI elements (this is handled by the elements themselves)
+        -- Update Status Bar if it exists
+        if StatusBarFrame then
+            Tween(StatusBarFrame, {BackgroundColor3 = Config.SecondaryBackground}, 0.3)
+            if UsernameLabel then
+                Tween(UsernameLabel, {TextColor3 = Config.Accent}, 0.3)
+                -- Update gradient
+                for _, child in ipairs(UsernameLabel:GetChildren()) do
+                    if child:IsA("UIGradient") then
+                        child.Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, Config.Accent),
+                            ColorSequenceKeypoint.new(1, Config.AccentSecondary)
+                        })
+                    end
+                end
+            end
+        end
+        
+        -- Update all tab indicators and their gradients
+        for _, tab in pairs(window.Tabs) do
+            if tab.Indicator then
+                Tween(tab.Indicator, {BackgroundColor3 = Config.Accent}, 0.3)
+                for _, child in ipairs(tab.Indicator:GetChildren()) do
+                    if child:IsA("UIGradient") then
+                        child.Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, Config.Accent),
+                            ColorSequenceKeypoint.new(1, Config.AccentSecondary)
+                        })
+                    end
+                end
+            end
+            
+            -- Update current tab text color
+            if window.CurrentTab == tab then
+                Tween(tab.Button, {TextColor3 = Config.Text}, 0.3)
+            end
+            
+            -- Update all sliders in this tab
+            for _, element in ipairs(tab.Content:GetDescendants()) do
+                if element.Name == "SliderFill" or element.Name == "ValueLabel" then
+                    if element:IsA("Frame") then
+                        Tween(element, {BackgroundColor3 = Config.Accent}, 0.3)
+                    elseif element:IsA("TextLabel") then
+                        Tween(element, {TextColor3 = Config.Accent}, 0.3)
+                    end
+                    
+                    -- Update gradients
+                    for _, child in ipairs(element:GetChildren()) do
+                        if child:IsA("UIGradient") then
+                            child.Color = ColorSequence.new({
+                                ColorSequenceKeypoint.new(0, Config.Accent),
+                                ColorSequenceKeypoint.new(1, Config.AccentSecondary)
+                            })
+                        end
+                    end
+                end
+            end
+        end
+        
         window:Notify({
             Title = "Theme Changed",
             Message = "Applied " .. themeName .. " theme",
@@ -1062,6 +1155,7 @@ function NexusUI:CreateWindow(options)
             })
             
             local ValueLabel = CreateElement("TextLabel", {
+                Name = "ValueLabel",
                 Size = UDim2.new(0, 50, 0, 20),
                 Position = UDim2.new(1, -58, 0, 6),
                 BackgroundTransparency = 1,
@@ -1085,6 +1179,7 @@ function NexusUI:CreateWindow(options)
             AddCorner(SliderBar, UDim.new(1, 0))
             
             local SliderFill = CreateElement("Frame", {
+                Name = "SliderFill",
                 Size = UDim2.new(0, 0, 1, 0),
                 BackgroundColor3 = Config.Accent,
                 BorderSizePixel = 0,
