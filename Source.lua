@@ -501,8 +501,8 @@ function Tundra:CreateWindow(config)
     TabContainer.ZIndex = 2
     
     if tabMode == "Horizontal" then
-        TabContainer.Size = UDim2.new(1, -10, 1, -10)
-        TabContainer.Position = UDim2.new(0, 5, 0, 5)
+        TabContainer.Size = UDim2.new(1, -10, 1, 0)
+        TabContainer.Position = UDim2.new(0, 5, 0, 0)
         TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
     else
@@ -512,15 +512,27 @@ function Tundra:CreateWindow(config)
         TabContainer.ScrollingDirection = Enum.ScrollingDirection.Y
     end
     
+    -- Add padding to horizontal tab container
+    if tabMode == "Horizontal" then
+        local TabPadding = Instance.new("UIPadding")
+        TabPadding.PaddingTop = UDim.new(0, 5)
+        TabPadding.PaddingBottom = UDim.new(0, 5)
+        TabPadding.PaddingLeft = UDim.new(0, 5)
+        TabPadding.PaddingRight = UDim.new(0, 5)
+        TabPadding.Parent = TabContainer
+    end
+    
     local TabList = Instance.new("UIListLayout")
     TabList.SortOrder = Enum.SortOrder.LayoutOrder
-    TabList.Padding = UDim.new(0, 8)
     TabList.Parent = TabContainer
     
     if tabMode == "Horizontal" then
         TabList.FillDirection = Enum.FillDirection.Horizontal
+        TabList.Padding = UDim.new(0, 6)
+        TabList.VerticalAlignment = Enum.VerticalAlignment.Center
     else
         TabList.FillDirection = Enum.FillDirection.Vertical
+        TabList.Padding = UDim.new(0, 8)
     end
     
     TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -542,8 +554,8 @@ function Tundra:CreateWindow(config)
         ContentContainer.Size = UDim2.new(1, -20, 1, -185)
         ContentContainer.Position = UDim2.new(0, 10, 0, 115)
     else
-        ContentContainer.Size = UDim2.new(1, -190, 1, -135)
-        ContentContainer.Position = UDim2.new(0, 180, 0, 115)
+        ContentContainer.Size = UDim2.new(1, -190, 1, -140)
+        ContentContainer.Position = UDim2.new(0, 180, 0, 70)
     end
     
     -- User Profile Section at bottom
@@ -777,11 +789,12 @@ function Tundra:CreateWindow(config)
         TabButton.BackgroundTransparency = 0.15
         TabButton.BorderSizePixel = 0
         TabButton.Text = ""
+        TabButton.AutoButtonColor = false
         TabButton.Parent = TabContainer
         TabButton.ZIndex = 3
         
         if window.tabMode == "Horizontal" then
-            TabButton.Size = UDim2.new(0, 120, 1, -10)
+            TabButton.Size = UDim2.new(0, 110, 0, 35)
         else
             TabButton.Size = UDim2.new(1, 0, 0, 38)
         end
@@ -796,20 +809,28 @@ function Tundra:CreateWindow(config)
         TabStroke.Transparency = 0.8
         TabStroke.Parent = TabButton
         
+        -- Content container for icon and label
+        local TabContentContainer = Instance.new("Frame")
+        TabContentContainer.Size = UDim2.new(1, -10, 1, 0)
+        TabContentContainer.Position = UDim2.new(0, 5, 0, 0)
+        TabContentContainer.BackgroundTransparency = 1
+        TabContentContainer.Parent = TabButton
+        TabContentContainer.ZIndex = 4
+        
         -- Icon
         local TabIcon = Instance.new("ImageLabel")
         TabIcon.BackgroundTransparency = 1
         TabIcon.Image = icon
         TabIcon.ImageColor3 = window.currentTheme.SubText
-        TabIcon.Parent = TabButton
-        TabIcon.ZIndex = 4
+        TabIcon.Parent = TabContentContainer
+        TabIcon.ZIndex = 5
         
         if window.tabMode == "Horizontal" then
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
-            TabIcon.Position = UDim2.new(0, 10, 0.5, -8)
+            TabIcon.Position = UDim2.new(0, 5, 0.5, -8)
         else
             TabIcon.Size = UDim2.new(0, 18, 0, 18)
-            TabIcon.Position = UDim2.new(0, 10, 0.5, -9)
+            TabIcon.Position = UDim2.new(0, 5, 0.5, -9)
         end
         
         -- Label
@@ -817,18 +838,60 @@ function Tundra:CreateWindow(config)
         TabLabel.BackgroundTransparency = 1
         TabLabel.Text = name
         TabLabel.TextColor3 = window.currentTheme.SubText
-        TabLabel.TextSize = 13
         TabLabel.Font = Enum.Font.GothamMedium
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
-        TabLabel.Parent = TabButton
-        TabLabel.ZIndex = 4
+        TabLabel.TextTruncate = Enum.TextTruncate.AtEnd
+        TabLabel.Parent = TabContentContainer
+        TabLabel.ZIndex = 5
         
         if window.tabMode == "Horizontal" then
-            TabLabel.Size = UDim2.new(1, -35, 1, 0)
-            TabLabel.Position = UDim2.new(0, 32, 0, 0)
+            TabLabel.Size = UDim2.new(1, -30, 1, 0)
+            TabLabel.Position = UDim2.new(0, 27, 0, 0)
+            TabLabel.TextSize = 12
         else
-            TabLabel.Size = UDim2.new(1, -40, 1, 0)
-            TabLabel.Position = UDim2.new(0, 35, 0, 0)
+            TabLabel.Size = UDim2.new(1, -35, 1, 0)
+            TabLabel.Position = UDim2.new(0, 30, 0, 0)
+            TabLabel.TextSize = 13
+        end
+        
+        -- Close button for horizontal mode (optional - appears on hover)
+        local TabCloseButton
+        if window.tabMode == "Horizontal" then
+            TabCloseButton = Instance.new("ImageButton")
+            TabCloseButton.Size = UDim2.new(0, 14, 0, 14)
+            TabCloseButton.Position = UDim2.new(1, -18, 0.5, -7)
+            TabCloseButton.BackgroundTransparency = 1
+            TabCloseButton.Image = Icons.X
+            TabCloseButton.ImageColor3 = window.currentTheme.SubText
+            TabCloseButton.ImageTransparency = 1
+            TabCloseButton.Parent = TabContentContainer
+            TabCloseButton.ZIndex = 6
+            
+            TabButton.MouseEnter:Connect(function()
+                if tab ~= window.currentTab then
+                    CreateTween(TabButton, {BackgroundTransparency = 0.05})
+                end
+                CreateTween(TabCloseButton, {ImageTransparency = 0})
+            end)
+            
+            TabButton.MouseLeave:Connect(function()
+                if tab ~= window.currentTab then
+                    CreateTween(TabButton, {BackgroundTransparency = 0.15})
+                end
+                CreateTween(TabCloseButton, {ImageTransparency = 1})
+            end)
+        else
+            TabButton.MouseEnter:Connect(function()
+                if tab ~= window.currentTab then
+                    CreateTween(TabButton, {BackgroundTransparency = 0.05})
+                end
+            end)
+            
+            TabButton.MouseLeave:Connect(function()
+                if tab ~= window.currentTab then
+                    CreateTween(TabButton, {BackgroundTransparency = 0.15})
+                end
+            end)
         end
         
         -- Tab Content
@@ -868,18 +931,6 @@ function Tundra:CreateWindow(config)
             CreateTween(TabButton, {BackgroundTransparency = 0.0})
             CreateTween(TabLabel, {TextColor3 = window.currentTheme.Text})
             CreateTween(TabIcon, {ImageColor3 = window.currentTheme.Accent})
-        end)
-        
-        TabButton.MouseEnter:Connect(function()
-            if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.05})
-            end
-        end)
-        
-        TabButton.MouseLeave:Connect(function()
-            if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.15})
-            end
         end)
         
         if not window.currentTab then
