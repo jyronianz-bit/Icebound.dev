@@ -1,45 +1,127 @@
 --[[
-    Nexus UI Library v2.1
+    Nexus UI Library v2.5 Enhanced
     Modern acrylic design with customizable transparency
-    - Enhanced minimize animation
-    - Improved notification system
-    - Fixed slider ball positioning
+    - Status bar with user info (username, FPS, ping, date, time)
+    - Gradient sliders
+    - Theme system with multiple presets
+    - Theme changer dropdown
 ]]
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+
+local LocalPlayer = Players.LocalPlayer
 
 local NexusUI = {}
 NexusUI.__index = NexusUI
 
--- Default Configuration
-local Config = {
-    -- Theme colors (customizable)
-    Background = Color3.fromRGB(20, 20, 25),
-    BackgroundTransparency = 0.15,
-    SecondaryBackground = Color3.fromRGB(30, 30, 38),
-    SecondaryTransparency = 0.2,
-    Accent = Color3.fromRGB(200, 100, 255),
-    AccentHover = Color3.fromRGB(220, 120, 255),
-    Text = Color3.fromRGB(240, 240, 245),
-    SubText = Color3.fromRGB(160, 160, 175),
-    Border = Color3.fromRGB(60, 60, 75),
-    
-    -- Glass/Acrylic effect
-    AcrylicEnabled = true,
-    BlurIntensity = 20,
-    
-    -- Animation settings
-    AnimationSpeed = 0.3,
-    HoverSpeed = 0.15,
-    
-    -- Sizes
-    CornerRadius = UDim.new(0, 10),
-    ButtonHeight = 32,
-    ToggleSize = 40,
-    SliderHeight = 4,
-    DropdownHeight = 32,
+-- Theme Presets
+local Themes = {
+    ["Nexus Purple"] = {
+        Background = Color3.fromRGB(20, 20, 25),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(30, 30, 38),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(200, 100, 255),
+        AccentSecondary = Color3.fromRGB(150, 80, 220),
+        AccentHover = Color3.fromRGB(220, 120, 255),
+        Text = Color3.fromRGB(240, 240, 245),
+        SubText = Color3.fromRGB(160, 160, 175),
+        Border = Color3.fromRGB(60, 60, 75),
+    },
+    ["Ocean Blue"] = {
+        Background = Color3.fromRGB(15, 23, 42),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(30, 41, 59),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(56, 189, 248),
+        AccentSecondary = Color3.fromRGB(14, 165, 233),
+        AccentHover = Color3.fromRGB(125, 211, 252),
+        Text = Color3.fromRGB(248, 250, 252),
+        SubText = Color3.fromRGB(148, 163, 184),
+        Border = Color3.fromRGB(51, 65, 85),
+    },
+    ["Crimson Dark"] = {
+        Background = Color3.fromRGB(25, 15, 20),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(38, 25, 30),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(239, 68, 68),
+        AccentSecondary = Color3.fromRGB(220, 38, 38),
+        AccentHover = Color3.fromRGB(252, 165, 165),
+        Text = Color3.fromRGB(254, 242, 242),
+        SubText = Color3.fromRGB(185, 148, 148),
+        Border = Color3.fromRGB(75, 40, 50),
+    },
+    ["Emerald Forest"] = {
+        Background = Color3.fromRGB(15, 25, 20),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(25, 38, 30),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(52, 211, 153),
+        AccentSecondary = Color3.fromRGB(16, 185, 129),
+        AccentHover = Color3.fromRGB(110, 231, 183),
+        Text = Color3.fromRGB(240, 253, 244),
+        SubText = Color3.fromRGB(156, 190, 169),
+        Border = Color3.fromRGB(45, 75, 60),
+    },
+    ["Golden Sunset"] = {
+        Background = Color3.fromRGB(30, 25, 15),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(45, 38, 25),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(251, 191, 36),
+        AccentSecondary = Color3.fromRGB(245, 158, 11),
+        AccentHover = Color3.fromRGB(253, 224, 71),
+        Text = Color3.fromRGB(254, 252, 232),
+        SubText = Color3.fromRGB(202, 191, 153),
+        Border = Color3.fromRGB(78, 70, 45),
+    },
+    ["Midnight Purple"] = {
+        Background = Color3.fromRGB(18, 15, 30),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(30, 25, 45),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(168, 85, 247),
+        AccentSecondary = Color3.fromRGB(126, 58, 242),
+        AccentHover = Color3.fromRGB(196, 181, 253),
+        Text = Color3.fromRGB(250, 245, 255),
+        SubText = Color3.fromRGB(175, 160, 200),
+        Border = Color3.fromRGB(55, 48, 75),
+    },
+    ["Arctic Ice"] = {
+        Background = Color3.fromRGB(15, 25, 30),
+        BackgroundTransparency = 0.15,
+        SecondaryBackground = Color3.fromRGB(25, 38, 45),
+        SecondaryTransparency = 0.2,
+        Accent = Color3.fromRGB(103, 232, 249),
+        AccentSecondary = Color3.fromRGB(34, 211, 238),
+        AccentHover = Color3.fromRGB(165, 243, 252),
+        Text = Color3.fromRGB(240, 253, 255),
+        SubText = Color3.fromRGB(155, 200, 210),
+        Border = Color3.fromRGB(45, 70, 80),
+    },
 }
+
+-- Default Configuration
+local Config = Themes["Nexus Purple"]
+Config.CurrentTheme = "Nexus Purple"
+
+-- Animation settings
+Config.AcrylicEnabled = true
+Config.BlurIntensity = 20
+Config.AnimationSpeed = 0.3
+Config.HoverSpeed = 0.15
+
+-- Sizes
+Config.CornerRadius = UDim.new(0, 10)
+Config.ButtonHeight = 32
+Config.ToggleSize = 40
+Config.SliderHeight = 4
+Config.DropdownHeight = 32
 
 -- Notification Queue System
 local NotificationQueue = {}
@@ -111,15 +193,26 @@ local function AddBlur(parent)
     end
 end
 
+-- Create Gradient for Slider
+local function CreateGradient(parent, colorStart, colorEnd)
+    local gradient = CreateElement("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, colorStart or Config.Accent),
+            ColorSequenceKeypoint.new(1, colorEnd or Config.AccentSecondary)
+        }),
+        Parent = parent
+    })
+    return gradient
+end
+
 -- Enhanced Notification System
 local function CreateNotification(screenGui, options)
     options = options or {}
     local title = options.Title or "Notification"
     local message = options.Message or ""
     local duration = options.Duration or 3
-    local notifType = options.Type or "Info" -- Info, Success, Warning, Error
+    local notifType = options.Type or "Info"
     
-    -- Color schemes for different notification types
     local typeColors = {
         Info = Config.Accent,
         Success = Color3.fromRGB(40, 201, 64),
@@ -128,8 +221,6 @@ local function CreateNotification(screenGui, options)
     }
     
     local accentColor = typeColors[notifType] or Config.Accent
-    
-    -- Calculate position based on active notifications
     local yOffset = -60 - (ActiveNotifications * 70)
     
     local NotificationFrame = CreateElement("Frame", {
@@ -145,7 +236,6 @@ local function CreateNotification(screenGui, options)
     AddStroke(NotificationFrame, accentColor, 2)
     AddBlur(NotificationFrame)
     
-    -- Accent bar on the left
     local AccentBar = CreateElement("Frame", {
         Size = UDim2.new(0, 4, 1, 0),
         Position = UDim2.new(0, 0, 0, 0),
@@ -156,7 +246,6 @@ local function CreateNotification(screenGui, options)
     })
     AddCorner(AccentBar, UDim.new(0, 10))
     
-    -- Icon based on type
     local icons = {
         Info = "ℹ",
         Success = "✓",
@@ -178,7 +267,6 @@ local function CreateNotification(screenGui, options)
     })
     AddCorner(IconLabel, UDim.new(1, 0))
     
-    -- Title
     local TitleLabel = CreateElement("TextLabel", {
         Size = UDim2.new(1, -110, 0, 18),
         Position = UDim2.new(0, 58, 0, 8),
@@ -192,7 +280,6 @@ local function CreateNotification(screenGui, options)
         Parent = NotificationFrame
     })
     
-    -- Message
     local MessageLabel = CreateElement("TextLabel", {
         Size = UDim2.new(1, -110, 0, 28),
         Position = UDim2.new(0, 58, 0, 26),
@@ -208,7 +295,6 @@ local function CreateNotification(screenGui, options)
         Parent = NotificationFrame
     })
     
-    -- Close button
     local CloseButton = CreateElement("TextButton", {
         Size = UDim2.new(0, 24, 0, 24),
         Position = UDim2.new(1, -32, 0, 8),
@@ -223,7 +309,6 @@ local function CreateNotification(screenGui, options)
     })
     AddCorner(CloseButton, UDim.new(1, 0))
     
-    -- Progress bar
     local ProgressBar = CreateElement("Frame", {
         Size = UDim2.new(1, 0, 0, 2),
         Position = UDim2.new(0, 0, 1, -2),
@@ -244,10 +329,8 @@ local function CreateNotification(screenGui, options)
     
     ActiveNotifications = ActiveNotifications + 1
     
-    -- Slide in animation
     Tween(NotificationFrame, {Position = UDim2.new(1, -330, 1, yOffset)}, 0.4)
     
-    -- Progress bar animation
     local progressTween = TweenService:Create(
         ProgressFill,
         TweenInfo.new(duration, Enum.EasingStyle.Linear),
@@ -255,7 +338,6 @@ local function CreateNotification(screenGui, options)
     )
     progressTween:Play()
     
-    -- Hover effects
     CloseButton.MouseEnter:Connect(function()
         Tween(CloseButton, {BackgroundTransparency = 0.2, TextColor3 = Config.Text}, 0.1)
     end)
@@ -274,7 +356,6 @@ local function CreateNotification(screenGui, options)
     
     CloseButton.MouseButton1Click:Connect(CloseNotification)
     
-    -- Auto close
     spawn(function()
         wait(duration)
         if NotificationFrame.Parent then
@@ -285,12 +366,42 @@ local function CreateNotification(screenGui, options)
     return NotificationFrame
 end
 
+-- Get FPS
+local function GetFPS()
+    local fps = math.floor(1 / RunService.RenderStepped:Wait())
+    return fps
+end
+
+-- Get Ping
+local function GetPing()
+    local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+    return ping
+end
+
+-- Get Current Date
+local function GetDate()
+    local dateTable = os.date("*t")
+    return string.format("%02d/%02d/%04d", dateTable.month, dateTable.day, dateTable.year)
+end
+
+-- Get Current Time
+local function GetTime()
+    local dateTable = os.date("*t")
+    local hour = dateTable.hour
+    local minute = dateTable.min
+    local ampm = hour >= 12 and "PM" or "AM"
+    hour = hour % 12
+    if hour == 0 then hour = 12 end
+    return string.format("%02d:%02d %s", hour, minute, ampm)
+end
+
 -- Main Library Functions
 function NexusUI:CreateWindow(options)
     options = options or {}
     local windowName = options.Name or "Nexus UI"
     local windowSize = options.Size or UDim2.new(0, 520, 0, 580)
     local toggleKey = options.ToggleKey or Enum.KeyCode.RightShift
+    local showStatusBar = options.StatusBar ~= false
     
     local window = {
         Tabs = {},
@@ -310,7 +421,6 @@ function NexusUI:CreateWindow(options)
         Parent = game.CoreGui
     })
     
-    -- Notification function
     function window:Notify(options)
         return CreateNotification(ScreenGui, options)
     end
@@ -388,7 +498,6 @@ function NexusUI:CreateWindow(options)
         
         if i == 1 then
             button.MouseButton1Click:Connect(function()
-                -- Enhanced close animation
                 Tween(MainFrame, {
                     Size = UDim2.new(0, 0, 0, 0),
                     BackgroundTransparency = 1
@@ -398,11 +507,9 @@ function NexusUI:CreateWindow(options)
             end)
         elseif i == 2 then
             button.MouseButton1Click:Connect(function()
-                -- Enhanced minimize animation
                 local originalSize = MainFrame.Size
                 local originalPos = MainFrame.Position
                 
-                -- Shrink and fade animation
                 Tween(MainFrame, {
                     Size = UDim2.new(0, 300, 0, 60),
                     Position = UDim2.new(0.5, 0, 0, -30),
@@ -415,7 +522,6 @@ function NexusUI:CreateWindow(options)
                 MainFrame.Position = originalPos
                 MainFrame.BackgroundTransparency = Config.BackgroundTransparency
                 
-                -- Enhanced notification
                 window:Notify({
                     Title = "UI Minimized",
                     Message = "Press " .. window.ToggleKey.Name .. " to restore",
@@ -440,11 +546,117 @@ function NexusUI:CreateWindow(options)
         Parent = TitleBar
     })
     
-    -- Tab Container (Top horizontal tabs) - Now scrollable
+    -- Status Bar (if enabled)
+    local StatusBar, UsernameLabel, FPSLabel, PingLabel, DateLabel, TimeLabel
+    local statusBarHeight = 0
+    
+    if showStatusBar then
+        statusBarHeight = 28
+        
+        StatusBar = CreateElement("Frame", {
+            Name = "StatusBar",
+            Size = UDim2.new(1, -20, 0, 24),
+            Position = UDim2.new(0, 10, 0, 42),
+            BackgroundColor3 = Config.SecondaryBackground,
+            BackgroundTransparency = Config.SecondaryTransparency,
+            BorderSizePixel = 0,
+            Parent = MainFrame
+        })
+        AddCorner(StatusBar, UDim.new(0, 6))
+        AddStroke(StatusBar, Config.Border, 1)
+        
+        -- Username
+        UsernameLabel = CreateElement("TextLabel", {
+            Size = UDim2.new(0, 100, 1, 0),
+            Position = UDim2.new(0, 8, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            Text = "👤 " .. LocalPlayer.Name,
+            TextColor3 = Config.Accent,
+            TextSize = 10,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = StatusBar
+        })
+        CreateGradient(UsernameLabel, Config.Accent, Config.AccentSecondary)
+        
+        -- FPS
+        FPSLabel = CreateElement("TextLabel", {
+            Size = UDim2.new(0, 60, 1, 0),
+            Position = UDim2.new(0, 115, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            Text = "📊 " .. GetFPS() .. " FPS",
+            TextColor3 = Config.Text,
+            TextSize = 9,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = StatusBar
+        })
+        
+        -- Ping
+        PingLabel = CreateElement("TextLabel", {
+            Size = UDim2.new(0, 70, 1, 0),
+            Position = UDim2.new(0, 180, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            Text = "📡 " .. GetPing() .. "ms",
+            TextColor3 = Config.Text,
+            TextSize = 9,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = StatusBar
+        })
+        
+        -- Date
+        DateLabel = CreateElement("TextLabel", {
+            Size = UDim2.new(0, 80, 1, 0),
+            Position = UDim2.new(0, 255, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            Text = "📅 " .. GetDate(),
+            TextColor3 = Config.SubText,
+            TextSize = 9,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = StatusBar
+        })
+        
+        -- Time
+        TimeLabel = CreateElement("TextLabel", {
+            Size = UDim2.new(0, 70, 1, 0),
+            Position = UDim2.new(1, -75, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            Text = "🕐 " .. GetTime(),
+            TextColor3 = Config.SubText,
+            TextSize = 9,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Parent = StatusBar
+        })
+        
+        -- Update status bar every second
+        spawn(function()
+            while StatusBar and StatusBar.Parent do
+                wait(1)
+                if FPSLabel then
+                    FPSLabel.Text = "📊 " .. GetFPS() .. " FPS"
+                end
+                if PingLabel then
+                    PingLabel.Text = "📡 " .. GetPing() .. "ms"
+                end
+                if TimeLabel then
+                    TimeLabel.Text = "🕐 " .. GetTime()
+                end
+                if DateLabel then
+                    DateLabel.Text = "📅 " .. GetDate()
+                end
+            end
+        end)
+    end
+    
+    -- Tab Container
+    local tabContainerY = 45 + statusBarHeight
     local TabContainer = CreateElement("ScrollingFrame", {
         Name = "TabContainer",
         Size = UDim2.new(1, -20, 0, 35),
-        Position = UDim2.new(0, 10, 0, 45),
+        Position = UDim2.new(0, 10, 0, tabContainerY),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         ScrollBarThickness = 4,
@@ -467,15 +679,13 @@ function NexusUI:CreateWindow(options)
         Parent = TabContainer
     })
     
-    -- Update canvas size when tabs are added
     TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabContainer.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 10, 0, 35)
     end)
     
-    -- Add mouse wheel scrolling support for horizontal scrolling
     TabContainer.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseWheel then
-            local scrollAmount = -input.Position.Z * 30 -- Adjust scroll speed
+            local scrollAmount = -input.Position.Z * 30
             local newPosition = TabContainer.CanvasPosition.X + scrollAmount
             TabContainer.CanvasPosition = Vector2.new(
                 math.clamp(newPosition, 0, math.max(0, TabContainer.CanvasSize.X.Offset - TabContainer.AbsoluteSize.X)),
@@ -485,10 +695,12 @@ function NexusUI:CreateWindow(options)
     end)
     
     -- Content Container
+    local contentY = 90 + statusBarHeight
+    local contentHeight = windowSize.Y.Offset - contentY - 10
     local ContentContainer = CreateElement("Frame", {
         Name = "ContentContainer",
-        Size = UDim2.new(1, -20, 1, -100),
-        Position = UDim2.new(0, 10, 0, 90),
+        Size = UDim2.new(1, -20, 0, contentHeight),
+        Position = UDim2.new(0, 10, 0, contentY),
         BackgroundTransparency = 1,
         Parent = MainFrame
     })
@@ -540,7 +752,6 @@ function NexusUI:CreateWindow(options)
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == toggleKey then
             if MainFrame.Visible then
-                -- Hide with animation
                 Tween(MainFrame, {
                     Size = UDim2.new(0, 300, 0, 60),
                     Position = UDim2.new(0.5, 0, 0, -30),
@@ -549,7 +760,6 @@ function NexusUI:CreateWindow(options)
                 wait(0.25)
                 MainFrame.Visible = false
             else
-                -- Show with animation
                 MainFrame.Visible = true
                 MainFrame.Size = UDim2.new(0, 300, 0, 60)
                 MainFrame.Position = UDim2.new(0.5, 0, 0, -30)
@@ -563,6 +773,30 @@ function NexusUI:CreateWindow(options)
         end
     end)
     
+    -- Theme Changer Function
+    function window:SetTheme(themeName)
+        if not Themes[themeName] then return end
+        
+        local newTheme = Themes[themeName]
+        
+        -- Update Config
+        for key, value in pairs(newTheme) do
+            Config[key] = value
+        end
+        Config.CurrentTheme = themeName
+        
+        -- Update Main Frame
+        Tween(MainFrame, {BackgroundColor3 = Config.Background}, 0.3)
+        
+        -- Update all UI elements (this is handled by the elements themselves)
+        window:Notify({
+            Title = "Theme Changed",
+            Message = "Applied " .. themeName .. " theme",
+            Duration = 3,
+            Type = "Success"
+        })
+    end
+    
     -- Tab Functions
     function window:CreateTab(tabName)
         local tab = {
@@ -570,7 +804,6 @@ function NexusUI:CreateWindow(options)
             Elements = {},
         }
         
-        -- Tab Button
         local TabButton = CreateElement("TextButton", {
             Name = tabName,
             Size = UDim2.new(0, 90, 0, 28),
@@ -585,7 +818,6 @@ function NexusUI:CreateWindow(options)
         })
         AddCorner(TabButton, UDim.new(0, 6))
         
-        -- Tab Underline Indicator
         local TabIndicator = CreateElement("Frame", {
             Size = UDim2.new(0, 0, 0, 2),
             Position = UDim2.new(0.5, 0, 1, -2),
@@ -595,8 +827,8 @@ function NexusUI:CreateWindow(options)
             Parent = TabButton
         })
         AddCorner(TabIndicator, UDim.new(1, 0))
+        CreateGradient(TabIndicator, Config.Accent, Config.AccentSecondary)
         
-        -- Tab Content
         local TabContent = CreateElement("ScrollingFrame", {
             Name = tabName .. "Content",
             Size = UDim2.new(1, 0, 1, 0),
@@ -840,6 +1072,7 @@ function NexusUI:CreateWindow(options)
                 TextXAlignment = Enum.TextXAlignment.Right,
                 Parent = SliderFrame
             })
+            CreateGradient(ValueLabel, Config.Accent, Config.AccentSecondary)
             
             local SliderBar = CreateElement("Frame", {
                 Size = UDim2.new(1, -24, 0, Config.SliderHeight),
@@ -858,8 +1091,8 @@ function NexusUI:CreateWindow(options)
                 Parent = SliderBar
             })
             AddCorner(SliderFill, UDim.new(1, 0))
+            CreateGradient(SliderFill, Config.Accent, Config.AccentSecondary)
             
-            -- Calculate initial position based on default value
             local initialPercentage = (default - min) / (max - min)
             
             local SliderButton = CreateElement("TextButton", {
@@ -939,7 +1172,6 @@ function NexusUI:CreateWindow(options)
                 end
             end)
             
-            -- Set initial position without animation
             local initialFillSize = SliderBar.AbsoluteSize.X * initialPercentage
             SliderFill.Size = UDim2.new(initialPercentage, 0, 1, 0)
             SliderButton.Position = UDim2.new(0, initialFillSize, 0.5, 0)
@@ -1326,10 +1558,25 @@ function NexusUI:CreateWindow(options)
     end
     
     -- Add Interface tab for customization
-    local InterfaceTab = window:CreateTab("Interface")
+    local InterfaceTab = window:CreateTab("Settings")
     
     InterfaceTab:AddLabel("UI Customization")
     InterfaceTab:AddDivider()
+    
+    -- Theme Dropdown
+    local themeNames = {}
+    for themeName, _ in pairs(Themes) do
+        table.insert(themeNames, themeName)
+    end
+    
+    InterfaceTab:AddDropdown({
+        Name = "Theme",
+        Items = themeNames,
+        Default = Config.CurrentTheme,
+        Callback = function(theme)
+            window:SetTheme(theme)
+        end
+    })
     
     InterfaceTab:AddToggle({
         Name = "Acrylic Effect",
@@ -1366,7 +1613,6 @@ function NexusUI:CreateWindow(options)
         end
     })
     
-    -- Configuration Functions
     function window:SaveConfig(name)
         name = name or "default"
         window.Configuration[name] = {}
