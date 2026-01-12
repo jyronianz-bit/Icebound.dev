@@ -1,10 +1,5 @@
 --[[
-    Nexus UI Library v2.5 Enhanced
-    Modern acrylic design with customizable transparency
-    - Status bar with user info (username, FPS, ping, date, time)
-    - Gradient sliders
-    - Theme system with multiple presets
-    - Theme changer dropdown
+    Nexus UI Library Beta
 ]]
 
 local TweenService = game:GetService("TweenService")
