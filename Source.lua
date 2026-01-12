@@ -553,8 +553,18 @@ function NexusUI:CreateWindow(options)
                     BackgroundTransparency = 0.5
                 }, 0.3)
                 
+                if StatusBarFrame then
+                    Tween(StatusBarFrame, {
+                        Position = UDim2.new(0.5, 0, 0, 35),
+                        BackgroundTransparency = 0.8
+                    }, 0.3)
+                end
+                
                 wait(0.3)
                 MainFrame.Visible = false
+                if StatusBarFrame then
+                    StatusBarFrame.Visible = false
+                end
                 MainFrame.Size = originalSize
                 MainFrame.Position = originalPos
                 MainFrame.BackgroundTransparency = Config.BackgroundTransparency
@@ -601,6 +611,28 @@ function NexusUI:CreateWindow(options)
         AddCorner(StatusBarFrame, UDim.new(0, 10))
         AddStroke(StatusBarFrame, Config.Border, 1)
         AddBlur(StatusBarFrame)
+        
+        -- Function to update status bar position based on main frame
+        local function UpdateStatusBarPosition()
+            if MainFrame and StatusBarFrame then
+                local mainPos = MainFrame.Position
+                local mainSize = MainFrame.AbsoluteSize
+                
+                StatusBarFrame.Position = UDim2.new(
+                    mainPos.X.Scale,
+                    mainPos.X.Offset,
+                    mainPos.Y.Scale,
+                    mainPos.Y.Offset + mainSize.Y + 6
+                )
+            end
+        end
+        
+        -- Update position whenever main frame moves
+        MainFrame:GetPropertyChangedSignal("Position"):Connect(UpdateStatusBarPosition)
+        MainFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(UpdateStatusBarPosition)
+        
+        -- Initial position update
+        UpdateStatusBarPosition()
         
         -- Username
         UsernameLabel = CreateElement("TextLabel", {
@@ -765,12 +797,24 @@ function NexusUI:CreateWindow(options)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
-            MainFrame.Position = UDim2.new(
+            local newPosition = UDim2.new(
                 startPos.X.Scale,
                 startPos.X.Offset + delta.X,
                 startPos.Y.Scale,
                 startPos.Y.Offset + delta.Y
             )
+            MainFrame.Position = newPosition
+            
+            -- Update status bar position in real-time while dragging
+            if StatusBarFrame then
+                local mainSize = MainFrame.AbsoluteSize
+                StatusBarFrame.Position = UDim2.new(
+                    newPosition.X.Scale,
+                    newPosition.X.Offset,
+                    newPosition.Y.Scale,
+                    newPosition.Y.Offset + mainSize.Y + 6
+                )
+            end
         end
     end)
     
@@ -786,23 +830,62 @@ function NexusUI:CreateWindow(options)
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == toggleKey then
             if MainFrame.Visible then
+                -- Hide with animation
                 Tween(MainFrame, {
                     Size = UDim2.new(0, 300, 0, 60),
                     Position = UDim2.new(0.5, 0, 0, -30),
                     BackgroundTransparency = 0.8
                 }, 0.25)
+                
+                if StatusBarFrame then
+                    Tween(StatusBarFrame, {
+                        Position = UDim2.new(0.5, 0, 0, 35),
+                        BackgroundTransparency = 0.8
+                    }, 0.25)
+                end
+                
                 wait(0.25)
                 MainFrame.Visible = false
+                if StatusBarFrame then
+                    StatusBarFrame.Visible = false
+                end
             else
+                -- Show with animation
                 MainFrame.Visible = true
+                if StatusBarFrame then
+                    StatusBarFrame.Visible = true
+                end
+                
                 MainFrame.Size = UDim2.new(0, 300, 0, 60)
                 MainFrame.Position = UDim2.new(0.5, 0, 0, -30)
                 MainFrame.BackgroundTransparency = 0.8
+                
+                if StatusBarFrame then
+                    StatusBarFrame.Position = UDim2.new(0.5, 0, 0, 35)
+                    StatusBarFrame.BackgroundTransparency = 0.8
+                end
+                
                 Tween(MainFrame, {
                     Size = windowSize,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BackgroundTransparency = Config.BackgroundTransparency
                 }, 0.3)
+                
+                if StatusBarFrame then
+                    wait(0.3)
+                    -- Update to proper position after main frame is restored
+                    local mainSize = MainFrame.AbsoluteSize
+                    local mainPos = MainFrame.Position
+                    Tween(StatusBarFrame, {
+                        Position = UDim2.new(
+                            mainPos.X.Scale,
+                            mainPos.X.Offset,
+                            mainPos.Y.Scale,
+                            mainPos.Y.Offset + mainSize.Y + 6
+                        ),
+                        BackgroundTransparency = Config.SecondaryTransparency
+                    }, 0.2)
+                end
             end
         end
     end)
