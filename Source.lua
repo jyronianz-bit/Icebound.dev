@@ -6,9 +6,19 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
 
 local Tundra = {}
 Tundra.__index = Tundra
+
+-- Create Blur Effect for entire screen
+local function CreateScreenBlur()
+    local BlurEffect = Instance.new("BlurEffect")
+    BlurEffect.Name = "TundraBlur"
+    BlurEffect.Size = 10
+    BlurEffect.Parent = game:GetService("Lighting")
+    return BlurEffect
+end
 
 -- Icon Library (Lucide Icons via URL)
 local Icons = {
@@ -241,6 +251,7 @@ function Tundra:CreateWindow(config)
     
     config = config or {}
     local title = config.Title or "Tundra.win"
+    local subtitle = config.Subtitle or "by Creator"
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
     local theme = config.Theme or "Dark"
     local size = config.Size or (isMobile and UDim2.new(0, 380, 0, 600) or UDim2.new(0, 650, 0, 550))
@@ -248,10 +259,14 @@ function Tundra:CreateWindow(config)
     window.currentTheme = Themes[theme] or Themes.Dark
     window.config = {
         Title = title,
+        Subtitle = subtitle,
         ToggleKey = toggleKey,
         Theme = theme,
         Elements = {}
     }
+    
+    -- Create screen blur effect
+    local ScreenBlur = CreateScreenBlur()
     
     -- Main ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
@@ -266,7 +281,7 @@ function Tundra:CreateWindow(config)
     MainFrame.Size = size
     MainFrame.Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
     MainFrame.BackgroundColor3 = window.currentTheme.Background
-    MainFrame.BackgroundTransparency = 0.08
+    MainFrame.BackgroundTransparency = 0.3
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
     MainFrame.ClipsDescendants = false
@@ -278,29 +293,45 @@ function Tundra:CreateWindow(config)
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = window.currentTheme.Border
     MainStroke.Thickness = 1
-    MainStroke.Transparency = 0.5
+    MainStroke.Transparency = 0.7
     MainStroke.Parent = MainFrame
     
-    -- Acrylic Blur Effect
-    local BlurContainer = Instance.new("Frame")
-    BlurContainer.Name = "BlurContainer"
-    BlurContainer.Size = UDim2.new(1, 0, 1, 0)
-    BlurContainer.BackgroundColor3 = window.currentTheme.Background
-    BlurContainer.BackgroundTransparency = 0.3
-    BlurContainer.BorderSizePixel = 0
-    BlurContainer.Parent = MainFrame
-    BlurContainer.ZIndex = 0
+    -- Glass/Acrylic effect overlay
+    local GlassEffect = Instance.new("Frame")
+    GlassEffect.Name = "GlassEffect"
+    GlassEffect.Size = UDim2.new(1, 0, 1, 0)
+    GlassEffect.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    GlassEffect.BackgroundTransparency = 0.98
+    GlassEffect.BorderSizePixel = 0
+    GlassEffect.Parent = MainFrame
+    GlassEffect.ZIndex = 0
     
-    local BlurCorner = Instance.new("UICorner")
-    BlurCorner.CornerRadius = UDim.new(0, 12)
-    BlurCorner.Parent = BlurContainer
+    local GlassCorner = Instance.new("UICorner")
+    GlassCorner.CornerRadius = UDim.new(0, 12)
+    GlassCorner.Parent = GlassEffect
+    
+    -- Noise texture for acrylic effect
+    local NoiseTexture = Instance.new("ImageLabel")
+    NoiseTexture.Name = "NoiseTexture"
+    NoiseTexture.Size = UDim2.new(1, 0, 1, 0)
+    NoiseTexture.BackgroundTransparency = 1
+    NoiseTexture.Image = "rbxassetid://5158447980"
+    NoiseTexture.ImageTransparency = 0.97
+    NoiseTexture.ScaleType = Enum.ScaleType.Tile
+    NoiseTexture.TileSize = UDim2.new(0, 100, 0, 100)
+    NoiseTexture.Parent = MainFrame
+    NoiseTexture.ZIndex = 1
+    
+    local NoiseCorner = Instance.new("UICorner")
+    NoiseCorner.CornerRadius = UDim.new(0, 12)
+    NoiseCorner.Parent = NoiseTexture
     
     -- Top Bar
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 45)
     TopBar.BackgroundColor3 = window.currentTheme.TopBar
-    TopBar.BackgroundTransparency = 0.15
+    TopBar.BackgroundTransparency = 0.4
     TopBar.BorderSizePixel = 0
     TopBar.Parent = MainFrame
     TopBar.ZIndex = 2
@@ -309,16 +340,23 @@ function Tundra:CreateWindow(config)
     TopBarCorner.CornerRadius = UDim.new(0, 12)
     TopBarCorner.Parent = TopBar
     
+    local TopBarStroke = Instance.new("UIStroke")
+    TopBarStroke.Color = window.currentTheme.Border
+    TopBarStroke.Thickness = 1
+    TopBarStroke.Transparency = 0.8
+    TopBarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    TopBarStroke.Parent = TopBar
+    
     local CornerFix = Instance.new("Frame")
     CornerFix.Size = UDim2.new(1, 0, 0, 12)
     CornerFix.Position = UDim2.new(0, 0, 1, -12)
     CornerFix.BackgroundColor3 = window.currentTheme.TopBar
-    CornerFix.BackgroundTransparency = 0.15
+    CornerFix.BackgroundTransparency = 0.4
     CornerFix.BorderSizePixel = 0
     CornerFix.Parent = TopBar
     CornerFix.ZIndex = 2
     
-    -- Title with Icon
+    -- Title with Icon and Subtitle
     local TitleContainer = Instance.new("Frame")
     TitleContainer.Size = UDim2.new(1, -120, 1, 0)
     TitleContainer.Position = UDim2.new(0, 15, 0, 0)
@@ -336,8 +374,8 @@ function Tundra:CreateWindow(config)
     TitleIcon.ZIndex = 3
     
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -30, 1, 0)
-    TitleLabel.Position = UDim2.new(0, 30, 0, 0)
+    TitleLabel.Size = UDim2.new(0, 200, 0, 20)
+    TitleLabel.Position = UDim2.new(0, 30, 0, 2)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = title
     TitleLabel.TextColor3 = window.currentTheme.Text
@@ -346,6 +384,18 @@ function Tundra:CreateWindow(config)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleContainer
     TitleLabel.ZIndex = 3
+    
+    local SubtitleLabel = Instance.new("TextLabel")
+    SubtitleLabel.Size = UDim2.new(0, 200, 0, 16)
+    SubtitleLabel.Position = UDim2.new(0, 30, 0, 20)
+    SubtitleLabel.BackgroundTransparency = 1
+    SubtitleLabel.Text = subtitle
+    SubtitleLabel.TextColor3 = window.currentTheme.SubText
+    SubtitleLabel.TextSize = 11
+    SubtitleLabel.Font = Enum.Font.Gotham
+    SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SubtitleLabel.Parent = TitleContainer
+    SubtitleLabel.ZIndex = 3
     
     -- Mac Buttons
     local MacButtons = Instance.new("Frame")
@@ -393,6 +443,7 @@ function Tundra:CreateWindow(config)
     CreateMacButton("Close", window.currentTheme.Error, UDim2.new(0, 0, 0.5, -7), function()
         CreateTween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3, Enum.EasingStyle.Back)
         wait(0.3)
+        ScreenBlur:Destroy()
         ScreenGui:Destroy()
     end)
     
@@ -413,10 +464,10 @@ function Tundra:CreateWindow(config)
     -- Side Bar
     local SideBar = Instance.new("Frame")
     SideBar.Name = "SideBar"
-    SideBar.Size = UDim2.new(0, 160, 1, -55)
+    SideBar.Size = UDim2.new(0, 160, 1, -125)
     SideBar.Position = UDim2.new(0, 10, 0, 50)
     SideBar.BackgroundColor3 = window.currentTheme.SideBar
-    SideBar.BackgroundTransparency = 0.2
+    SideBar.BackgroundTransparency = 0.5
     SideBar.BorderSizePixel = 0
     SideBar.Parent = MainFrame
     SideBar.ZIndex = 1
@@ -424,6 +475,12 @@ function Tundra:CreateWindow(config)
     local SideBarCorner = Instance.new("UICorner")
     SideBarCorner.CornerRadius = UDim.new(0, 8)
     SideBarCorner.Parent = SideBar
+    
+    local SideBarStroke = Instance.new("UIStroke")
+    SideBarStroke.Color = window.currentTheme.Border
+    SideBarStroke.Thickness = 1
+    SideBarStroke.Transparency = 0.8
+    SideBarStroke.Parent = SideBar
     
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
@@ -445,6 +502,77 @@ function Tundra:CreateWindow(config)
     TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 10)
     end)
+    
+    -- User Profile Section at bottom
+    local LocalPlayer = Players.LocalPlayer
+    local ProfileSection = Instance.new("Frame")
+    ProfileSection.Name = "ProfileSection"
+    ProfileSection.Size = UDim2.new(0, 160, 0, 60)
+    ProfileSection.Position = UDim2.new(0, 10, 1, -70)
+    ProfileSection.BackgroundColor3 = window.currentTheme.Element
+    ProfileSection.BackgroundTransparency = 0.5
+    ProfileSection.BorderSizePixel = 0
+    ProfileSection.Parent = MainFrame
+    ProfileSection.ZIndex = 1
+    
+    local ProfileCorner = Instance.new("UICorner")
+    ProfileCorner.CornerRadius = UDim.new(0, 8)
+    ProfileCorner.Parent = ProfileSection
+    
+    local ProfileStroke = Instance.new("UIStroke")
+    ProfileStroke.Color = window.currentTheme.Border
+    ProfileStroke.Thickness = 1
+    ProfileStroke.Transparency = 0.8
+    ProfileStroke.Parent = ProfileSection
+    
+    -- User Avatar
+    local UserAvatar = Instance.new("ImageLabel")
+    UserAvatar.Size = UDim2.new(0, 40, 0, 40)
+    UserAvatar.Position = UDim2.new(0, 10, 0.5, -20)
+    UserAvatar.BackgroundColor3 = window.currentTheme.Background
+    UserAvatar.BackgroundTransparency = 0.3
+    UserAvatar.BorderSizePixel = 0
+    UserAvatar.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    UserAvatar.Parent = ProfileSection
+    UserAvatar.ZIndex = 2
+    
+    local AvatarCorner = Instance.new("UICorner")
+    AvatarCorner.CornerRadius = UDim.new(0, 8)
+    AvatarCorner.Parent = UserAvatar
+    
+    local AvatarStroke = Instance.new("UIStroke")
+    AvatarStroke.Color = window.currentTheme.Accent
+    AvatarStroke.Thickness = 2
+    AvatarStroke.Transparency = 0.5
+    AvatarStroke.Parent = UserAvatar
+    
+    -- Username
+    local Username = Instance.new("TextLabel")
+    Username.Size = UDim2.new(0, 95, 0, 18)
+    Username.Position = UDim2.new(0, 55, 0, 12)
+    Username.BackgroundTransparency = 1
+    Username.Text = "@" .. LocalPlayer.Name
+    Username.TextColor3 = window.currentTheme.Text
+    Username.TextSize = 12
+    Username.Font = Enum.Font.GothamBold
+    Username.TextXAlignment = Enum.TextXAlignment.Left
+    Username.TextTruncate = Enum.TextTruncate.AtEnd
+    Username.Parent = ProfileSection
+    Username.ZIndex = 2
+    
+    -- Display Name
+    local DisplayName = Instance.new("TextLabel")
+    DisplayName.Size = UDim2.new(0, 95, 0, 16)
+    DisplayName.Position = UDim2.new(0, 55, 0, 30)
+    DisplayName.BackgroundTransparency = 1
+    DisplayName.Text = LocalPlayer.DisplayName
+    DisplayName.TextColor3 = window.currentTheme.SubText
+    DisplayName.TextSize = 10
+    DisplayName.Font = Enum.Font.Gotham
+    DisplayName.TextXAlignment = Enum.TextXAlignment.Left
+    DisplayName.TextTruncate = Enum.TextTruncate.AtEnd
+    DisplayName.Parent = ProfileSection
+    DisplayName.ZIndex = 2
     
     -- Content Container
     local ContentContainer = Instance.new("Frame")
@@ -488,19 +616,26 @@ function Tundra:CreateWindow(config)
         
         -- Update colors with animations
         CreateTween(MainFrame, {BackgroundColor3 = newTheme.Background})
-        CreateTween(BlurContainer, {BackgroundColor3 = newTheme.Background})
+        CreateTween(GlassEffect, {BackgroundColor3 = Color3.fromRGB(255, 255, 255)})
         CreateTween(TopBar, {BackgroundColor3 = newTheme.TopBar})
         CreateTween(CornerFix, {BackgroundColor3 = newTheme.TopBar})
         CreateTween(SideBar, {BackgroundColor3 = newTheme.SideBar})
+        CreateTween(ProfileSection, {BackgroundColor3 = newTheme.Element})
         CreateTween(TitleLabel, {TextColor3 = newTheme.Text})
+        CreateTween(SubtitleLabel, {TextColor3 = newTheme.SubText})
         CreateTween(TitleIcon, {ImageColor3 = newTheme.Accent})
         CreateTween(MainStroke, {Color = newTheme.Border})
+        CreateTween(Username, {TextColor3 = newTheme.Text})
+        CreateTween(DisplayName, {TextColor3 = newTheme.SubText})
+        CreateTween(AvatarStroke, {Color = newTheme.Accent})
         
         -- Update all tabs
         for _, tab in pairs(window.tabs) do
             if tab.button then
                 CreateTween(tab.button, {
-                    BackgroundColor3 = tab == window.currentTab and newTheme.Element or newTheme.Element,
+                    BackgroundColor3 = tab == window.currentTab and newTheme.Element or newTheme.Element
+                })
+                CreateTween(tab.label, {
                     TextColor3 = tab == window.currentTab and newTheme.Text or newTheme.SubText
                 })
                 if tab.icon then
@@ -540,7 +675,7 @@ function Tundra:CreateWindow(config)
         TabButton.Name = name
         TabButton.Size = UDim2.new(1, 0, 0, 38)
         TabButton.BackgroundColor3 = window.currentTheme.Element
-        TabButton.BackgroundTransparency = 0.3
+        TabButton.BackgroundTransparency = 0.6
         TabButton.BorderSizePixel = 0
         TabButton.Text = ""
         TabButton.Parent = TabContainer
@@ -549,6 +684,12 @@ function Tundra:CreateWindow(config)
         local TabCorner = Instance.new("UICorner")
         TabCorner.CornerRadius = UDim.new(0, 8)
         TabCorner.Parent = TabButton
+        
+        local TabStroke = Instance.new("UIStroke")
+        TabStroke.Color = window.currentTheme.Border
+        TabStroke.Thickness = 1
+        TabStroke.Transparency = 0.8
+        TabStroke.Parent = TabButton
         
         -- Icon
         local TabIcon = Instance.new("ImageLabel")
@@ -598,7 +739,7 @@ function Tundra:CreateWindow(config)
         TabButton.MouseButton1Click:Connect(function()
             for _, t in pairs(window.tabs) do
                 t.content.Visible = false
-                CreateTween(t.button, {BackgroundTransparency = 0.3})
+                CreateTween(t.button, {BackgroundTransparency = 0.6})
                 CreateTween(t.label, {TextColor3 = window.currentTheme.SubText})
                 if t.icon then
                     CreateTween(t.icon, {ImageColor3 = window.currentTheme.SubText})
@@ -607,25 +748,25 @@ function Tundra:CreateWindow(config)
             
             TabContent.Visible = true
             window.currentTab = tab
-            CreateTween(TabButton, {BackgroundTransparency = 0.1})
+            CreateTween(TabButton, {BackgroundTransparency = 0.3})
             CreateTween(TabLabel, {TextColor3 = window.currentTheme.Text})
             CreateTween(TabIcon, {ImageColor3 = window.currentTheme.Accent})
         end)
         
         TabButton.MouseEnter:Connect(function()
             if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.2})
+                CreateTween(TabButton, {BackgroundTransparency = 0.4})
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if tab ~= window.currentTab then
-                CreateTween(TabButton, {BackgroundTransparency = 0.3})
+                CreateTween(TabButton, {BackgroundTransparency = 0.6})
             end
         end)
         
         if not window.currentTab then
-            TabButton.BackgroundTransparency = 0.1
+            TabButton.BackgroundTransparency = 0.3
             TabLabel.TextColor3 = window.currentTheme.Text
             TabIcon.ImageColor3 = window.currentTheme.Accent
             TabContent.Visible = true
@@ -645,7 +786,7 @@ function Tundra:CreateWindow(config)
             Button.Name = text
             Button.Size = UDim2.new(1, -10, 0, 42)
             Button.BackgroundColor3 = window.currentTheme.Element
-            Button.BackgroundTransparency = 0.25
+            Button.BackgroundTransparency = 0.6
             Button.BorderSizePixel = 0
             Button.Text = ""
             Button.Parent = TabContent
@@ -654,6 +795,12 @@ function Tundra:CreateWindow(config)
             local ButtonCorner = Instance.new("UICorner")
             ButtonCorner.CornerRadius = UDim.new(0, 8)
             ButtonCorner.Parent = Button
+            
+            local ButtonStroke = Instance.new("UIStroke")
+            ButtonStroke.Color = window.currentTheme.Border
+            ButtonStroke.Thickness = 1
+            ButtonStroke.Transparency = 0.8
+            ButtonStroke.Parent = Button
             
             local ButtonIcon = Instance.new("ImageLabel")
             ButtonIcon.Size = UDim2.new(0, 20, 0, 20)
@@ -677,20 +824,20 @@ function Tundra:CreateWindow(config)
             ButtonLabel.ZIndex = 4
             
             Button.MouseEnter:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.1})
+                CreateTween(Button, {BackgroundTransparency = 0.4})
                 CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Text})
             end)
             
             Button.MouseLeave:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.25})
+                CreateTween(Button, {BackgroundTransparency = 0.6})
                 CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Accent})
             end)
             
             Button.MouseButton1Click:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.05}, 0.1)
+                CreateTween(Button, {BackgroundTransparency = 0.3}, 0.1)
                 CreateTween(ButtonIcon, {Size = UDim2.new(0, 24, 0, 24)}, 0.1)
                 wait(0.1)
-                CreateTween(Button, {BackgroundTransparency = 0.25}, 0.2)
+                CreateTween(Button, {BackgroundTransparency = 0.6}, 0.2)
                 CreateTween(ButtonIcon, {Size = UDim2.new(0, 20, 0, 20)}, 0.2)
                 if callback then
                     pcall(callback)
@@ -709,7 +856,7 @@ function Tundra:CreateWindow(config)
             ToggleFrame.Name = text
             ToggleFrame.Size = UDim2.new(1, -10, 0, 42)
             ToggleFrame.BackgroundColor3 = window.currentTheme.Element
-            ToggleFrame.BackgroundTransparency = risky and 0.15 or 0.25
+            ToggleFrame.BackgroundTransparency = risky and 0.5 or 0.6
             ToggleFrame.BorderSizePixel = 0
             ToggleFrame.Parent = TabContent
             ToggleFrame.ZIndex = 3
@@ -717,6 +864,12 @@ function Tundra:CreateWindow(config)
             local ToggleCorner = Instance.new("UICorner")
             ToggleCorner.CornerRadius = UDim.new(0, 8)
             ToggleCorner.Parent = ToggleFrame
+            
+            local ToggleStroke = Instance.new("UIStroke")
+            ToggleStroke.Color = window.currentTheme.Border
+            ToggleStroke.Thickness = 1
+            ToggleStroke.Transparency = 0.8
+            ToggleStroke.Parent = ToggleFrame
             
             if risky then
                 local RiskyStroke = Instance.new("UIStroke")
@@ -828,7 +981,7 @@ function Tundra:CreateWindow(config)
             SliderFrame.Name = text
             SliderFrame.Size = UDim2.new(1, -10, 0, 65)
             SliderFrame.BackgroundColor3 = window.currentTheme.Element
-            SliderFrame.BackgroundTransparency = 0.25
+            SliderFrame.BackgroundTransparency = 0.6
             SliderFrame.BorderSizePixel = 0
             SliderFrame.Parent = TabContent
             SliderFrame.ZIndex = 3
@@ -836,6 +989,12 @@ function Tundra:CreateWindow(config)
             local SliderCorner = Instance.new("UICorner")
             SliderCorner.CornerRadius = UDim.new(0, 8)
             SliderCorner.Parent = SliderFrame
+            
+            local SliderStroke = Instance.new("UIStroke")
+            SliderStroke.Color = window.currentTheme.Border
+            SliderStroke.Thickness = 1
+            SliderStroke.Transparency = 0.8
+            SliderStroke.Parent = SliderFrame
             
             local SliderIcon = Instance.new("ImageLabel")
             SliderIcon.Size = UDim2.new(0, 18, 0, 18)
@@ -950,7 +1109,7 @@ function Tundra:CreateWindow(config)
             DropdownFrame.Name = text
             DropdownFrame.Size = UDim2.new(1, -10, 0, 45)
             DropdownFrame.BackgroundColor3 = window.currentTheme.Element
-            DropdownFrame.BackgroundTransparency = 0.25
+            DropdownFrame.BackgroundTransparency = 0.6
             DropdownFrame.BorderSizePixel = 0
             DropdownFrame.ClipsDescendants = true
             DropdownFrame.Parent = TabContent
@@ -959,6 +1118,12 @@ function Tundra:CreateWindow(config)
             local DropdownCorner = Instance.new("UICorner")
             DropdownCorner.CornerRadius = UDim.new(0, 8)
             DropdownCorner.Parent = DropdownFrame
+            
+            local DropdownStroke = Instance.new("UIStroke")
+            DropdownStroke.Color = window.currentTheme.Border
+            DropdownStroke.Thickness = 1
+            DropdownStroke.Transparency = 0.8
+            DropdownStroke.Parent = DropdownFrame
             
             local DropdownIcon = Instance.new("ImageLabel")
             DropdownIcon.Size = UDim2.new(0, 18, 0, 18)
@@ -1016,7 +1181,7 @@ function Tundra:CreateWindow(config)
                 local OptionButton = Instance.new("TextButton")
                 OptionButton.Size = UDim2.new(1, 0, 0, 35)
                 OptionButton.BackgroundColor3 = window.currentTheme.Background
-                OptionButton.BackgroundTransparency = 0.3
+                OptionButton.BackgroundTransparency = 0.5
                 OptionButton.BorderSizePixel = 0
                 OptionButton.Text = option
                 OptionButton.TextColor3 = window.currentTheme.SubText
@@ -1026,11 +1191,11 @@ function Tundra:CreateWindow(config)
                 OptionButton.ZIndex = 5
                 
                 OptionButton.MouseEnter:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.15, TextColor3 = window.currentTheme.Text})
+                    CreateTween(OptionButton, {BackgroundTransparency = 0.3, TextColor3 = window.currentTheme.Text})
                 end)
                 
                 OptionButton.MouseLeave:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.3, TextColor3 = window.currentTheme.SubText})
+                    CreateTween(OptionButton, {BackgroundTransparency = 0.5, TextColor3 = window.currentTheme.SubText})
                 end)
                 
                 OptionButton.MouseButton1Click:Connect(function()
@@ -1069,7 +1234,7 @@ function Tundra:CreateWindow(config)
             ColorFrame.Name = text
             ColorFrame.Size = UDim2.new(1, -10, 0, 45)
             ColorFrame.BackgroundColor3 = window.currentTheme.Element
-            ColorFrame.BackgroundTransparency = 0.25
+            ColorFrame.BackgroundTransparency = 0.6
             ColorFrame.BorderSizePixel = 0
             ColorFrame.ClipsDescendants = true
             ColorFrame.Parent = TabContent
@@ -1078,6 +1243,12 @@ function Tundra:CreateWindow(config)
             local ColorCorner = Instance.new("UICorner")
             ColorCorner.CornerRadius = UDim.new(0, 8)
             ColorCorner.Parent = ColorFrame
+            
+            local ColorStroke = Instance.new("UIStroke")
+            ColorStroke.Color = window.currentTheme.Border
+            ColorStroke.Thickness = 1
+            ColorStroke.Transparency = 0.8
+            ColorStroke.Parent = ColorFrame
             
             local ColorIcon = Instance.new("ImageLabel")
             ColorIcon.Size = UDim2.new(0, 18, 0, 18)
@@ -1133,7 +1304,7 @@ function Tundra:CreateWindow(config)
             PickerPanel.Size = UDim2.new(1, -20, 0, 200)
             PickerPanel.Position = UDim2.new(0, 10, 0, 50)
             PickerPanel.BackgroundColor3 = window.currentTheme.Background
-            PickerPanel.BackgroundTransparency = 0.1
+            PickerPanel.BackgroundTransparency = 0.4
             PickerPanel.BorderSizePixel = 0
             PickerPanel.Visible = false
             PickerPanel.Parent = ColorFrame
@@ -1142,6 +1313,12 @@ function Tundra:CreateWindow(config)
             local PickerCorner = Instance.new("UICorner")
             PickerCorner.CornerRadius = UDim.new(0, 8)
             PickerCorner.Parent = PickerPanel
+            
+            local PickerStroke = Instance.new("UIStroke")
+            PickerStroke.Color = window.currentTheme.Border
+            PickerStroke.Thickness = 1
+            PickerStroke.Transparency = 0.7
+            PickerStroke.Parent = PickerPanel
             
             -- SV Picker
             local SVPicker = Instance.new("ImageLabel")
@@ -1369,7 +1546,7 @@ function Tundra:CreateWindow(config)
             KeybindFrame.Name = text
             KeybindFrame.Size = UDim2.new(1, -10, 0, 45)
             KeybindFrame.BackgroundColor3 = window.currentTheme.Element
-            KeybindFrame.BackgroundTransparency = 0.25
+            KeybindFrame.BackgroundTransparency = 0.6
             KeybindFrame.BorderSizePixel = 0
             KeybindFrame.Parent = TabContent
             KeybindFrame.ZIndex = 3
@@ -1377,6 +1554,12 @@ function Tundra:CreateWindow(config)
             local KeybindCorner = Instance.new("UICorner")
             KeybindCorner.CornerRadius = UDim.new(0, 8)
             KeybindCorner.Parent = KeybindFrame
+            
+            local KeybindStroke = Instance.new("UIStroke")
+            KeybindStroke.Color = window.currentTheme.Border
+            KeybindStroke.Thickness = 1
+            KeybindStroke.Transparency = 0.8
+            KeybindStroke.Parent = KeybindFrame
             
             local KeybindIcon = Instance.new("ImageLabel")
             KeybindIcon.Size = UDim2.new(0, 18, 0, 18)
@@ -1403,7 +1586,7 @@ function Tundra:CreateWindow(config)
             KeybindButton.Size = UDim2.new(0, 100, 0, 32)
             KeybindButton.Position = UDim2.new(1, -110, 0.5, -16)
             KeybindButton.BackgroundColor3 = window.currentTheme.Background
-            KeybindButton.BackgroundTransparency = 0.3
+            KeybindButton.BackgroundTransparency = 0.5
             KeybindButton.BorderSizePixel = 0
             KeybindButton.Text = default and default.Name or "None"
             KeybindButton.TextColor3 = window.currentTheme.Text
@@ -1415,6 +1598,12 @@ function Tundra:CreateWindow(config)
             local KeybindButtonCorner = Instance.new("UICorner")
             KeybindButtonCorner.CornerRadius = UDim.new(0, 6)
             KeybindButtonCorner.Parent = KeybindButton
+            
+            local KeybindButtonStroke = Instance.new("UIStroke")
+            KeybindButtonStroke.Color = window.currentTheme.Border
+            KeybindButtonStroke.Thickness = 1
+            KeybindButtonStroke.Transparency = 0.8
+            KeybindButtonStroke.Parent = KeybindButton
             
             local currentKey = default
             local listening = false
