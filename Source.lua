@@ -686,15 +686,6 @@ function Tundra:CreateWindow(config)
         SaveConfig(title, window.config)
     end)
     
-    -- Content Container
-    local ContentContainer = Instance.new("Frame")
-    ContentContainer.Name = "ContentContainer"
-    ContentContainer.Size = UDim2.new(1, -190, 1, -65)
-    ContentContainer.Position = UDim2.new(0, 180, 0, 55)
-    ContentContainer.BackgroundTransparency = 1
-    ContentContainer.Parent = MainFrame
-    ContentContainer.ZIndex = 1
-    
     -- Make draggable
     MakeDraggable(MainFrame, TopBar)
     
