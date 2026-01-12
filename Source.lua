@@ -1,28 +1,69 @@
--- Tundra UI Library v1.0
--- Modern, macOS-inspired UI framework for Roblox
--- Features: Fluent design, theme system, save manager, notifications, keybinds, warnings, risky bools, element locking
+-- Tundra UI Library v2.0
+-- Modern macOS-inspired UI with acrylic blur, PFP area, and Fluent design
+-- Based on Fluent UI and Maclib principles
 
 local Tundra = {
-    Version = "1.0.0",
+    Version = "2.0.0",
     Name = "Tundra",
     CurrentTheme = "Dark",
-    LockedElements = {}
+    LockedElements = {},
+    Assets = {
+        interFont = "rbxassetid://12187365364",
+        userInfoBlurred = "rbxassetid://18824089198",
+        toggleBackground = "rbxassetid://18772190202",
+        togglerHead = "rbxassetid://18772309008",
+        buttonImage = "rbxassetid://10709791437",
+        searchIcon = "rbxassetid://86737463322606",
+        colorWheel = "rbxassetid://2849458409",
+        colorTarget = "rbxassetid://73265255323268",
+        grid = "rbxassetid://121484455191370",
+        globe = "rbxassetid://108952102602834",
+        transform = "rbxassetid://90336395745819",
+        dropdown = "rbxassetid://18865373378",
+        sliderbar = "rbxassetid://18772615246",
+        sliderhead = "rbxassetid://18772834246",
+        
+        -- Lucide Icons (from official website)
+        home = "rbxassetid://10709790925",
+        sword = "rbxassetid://10709791277",
+        eye = "rbxassetid://10709790603",
+        robot = "rbxassetid://10709791112",
+        settings = "rbxassetid://10709791047",
+        info = "rbxassetid://10709790771",
+        user = "rbxassetid://10709791437",
+        bell = "rbxassetid://10709790417",
+        check = "rbxassetid://10709790485",
+        x = "rbxassetid://10709791575",
+        chevron_down = "rbxassetid://10709790539",
+        search = "rbxassetid://10709791099",
+        sun = "rbxassetid://10709791234",
+        moon = "rbxassetid://10709790839",
+        warning = "rbxassetid://10709791499",
+        lock = "rbxassetid://10709790803",
+        unlock = "rbxassetid://10709791370",
+        refresh = "rbxassetid://10709791013",
+        filter = "rbxassetid://10709790671",
+        zap = "rbxassetid://10709791541"
+    }
 }
 
+-- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local TextService = game:GetService("TextService")
 
 -- ====================
 -- THEME SYSTEM
 -- ====================
 Tundra.Themes = {
     Dark = {
-        Background = Color3.fromRGB(30, 30, 35),
-        SecondaryBackground = Color3.fromRGB(40, 40, 45),
-        TertiaryBackground = Color3.fromRGB(50, 50, 55),
+        Background = Color3.fromRGB(25, 25, 30),
+        SecondaryBackground = Color3.fromRGB(35, 35, 40),
+        TertiaryBackground = Color3.fromRGB(45, 45, 50),
+        CardBackground = Color3.fromRGB(30, 30, 35, 0.8),
         
         Primary = Color3.fromRGB(0, 122, 255),
         PrimaryHover = Color3.fromRGB(10, 132, 255),
@@ -36,20 +77,25 @@ Tundra.Themes = {
         SubText = Color3.fromRGB(180, 180, 180),
         DisabledText = Color3.fromRGB(120, 120, 120),
         
-        Border = Color3.fromRGB(70, 70, 75),
-        Shadow = Color3.fromRGB(0, 0, 0, 0.3),
+        Border = Color3.fromRGB(60, 60, 65),
+        Shadow = Color3.fromRGB(0, 0, 0, 0.4),
         
         ToggleOn = Color3.fromRGB(52, 199, 89),
-        ToggleOff = Color3.fromRGB(70, 70, 75),
+        ToggleOff = Color3.fromRGB(60, 60, 65),
         
         Risky = Color3.fromRGB(255, 69, 58),
-        Safe = Color3.fromRGB(52, 199, 89)
+        Safe = Color3.fromRGB(52, 199, 89),
+        
+        Accent1 = Color3.fromRGB(175, 82, 222),
+        Accent2 = Color3.fromRGB(255, 159, 10),
+        Accent3 = Color3.fromRGB(50, 215, 75)
     },
     
     Light = {
         Background = Color3.fromRGB(242, 242, 247),
         SecondaryBackground = Color3.fromRGB(255, 255, 255),
         TertiaryBackground = Color3.fromRGB(248, 248, 248),
+        CardBackground = Color3.fromRGB(255, 255, 255, 0.8),
         
         Primary = Color3.fromRGB(0, 122, 255),
         PrimaryHover = Color3.fromRGB(10, 132, 255),
@@ -70,34 +116,11 @@ Tundra.Themes = {
         ToggleOff = Color3.fromRGB(209, 209, 214),
         
         Risky = Color3.fromRGB(255, 69, 58),
-        Safe = Color3.fromRGB(52, 199, 89)
-    },
-    
-    Dracula = {
-        Background = Color3.fromRGB(40, 42, 54),
-        SecondaryBackground = Color3.fromRGB(68, 71, 90),
-        TertiaryBackground = Color3.fromRGB(50, 52, 64),
+        Safe = Color3.fromRGB(52, 199, 89),
         
-        Primary = Color3.fromRGB(189, 147, 249),
-        PrimaryHover = Color3.fromRGB(199, 157, 255),
-        PrimaryPressed = Color3.fromRGB(179, 137, 239),
-        
-        Success = Color3.fromRGB(80, 250, 123),
-        Warning = Color3.fromRGB(241, 250, 140),
-        Danger = Color3.fromRGB(255, 85, 85),
-        
-        Text = Color3.fromRGB(248, 248, 242),
-        SubText = Color3.fromRGB(139, 233, 253),
-        DisabledText = Color3.fromRGB(98, 114, 164),
-        
-        Border = Color3.fromRGB(68, 71, 90),
-        Shadow = Color3.fromRGB(0, 0, 0, 0.4),
-        
-        ToggleOn = Color3.fromRGB(80, 250, 123),
-        ToggleOff = Color3.fromRGB(68, 71, 90),
-        
-        Risky = Color3.fromRGB(255, 121, 198),
-        Safe = Color3.fromRGB(80, 250, 123)
+        Accent1 = Color3.fromRGB(175, 82, 222),
+        Accent2 = Color3.fromRGB(255, 159, 10),
+        Accent3 = Color3.fromRGB(50, 215, 75)
     }
 }
 
@@ -125,17 +148,31 @@ end
 
 function Tundra.Roundify(obj, cornerRadius)
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, cornerRadius or 6)
+    corner.CornerRadius = UDim.new(0, cornerRadius or 8)
     corner.Parent = obj
     return corner
 end
 
-function Tundra.AddShadow(obj, transparency)
+function Tundra.CreateBlur(transparency)
+    local blur = Instance.new("ImageLabel")
+    blur.Name = "AcrylicBlur"
+    blur.Image = Tundra.Assets.userInfoBlurred
+    blur.ImageColor3 = Color3.new(1, 1, 1)
+    blur.ImageTransparency = transparency or 0.2
+    blur.ScaleType = Enum.ScaleType.Tile
+    blur.TileSize = UDim2.new(0, 100, 0, 100)
+    blur.BackgroundTransparency = 1
+    blur.Size = UDim2.new(1, 0, 1, 0)
+    blur.ZIndex = -1
+    return blur
+end
+
+function Tundra.CreateShadow(obj, intensity)
     local shadow = Instance.new("ImageLabel")
     shadow.Name = "Shadow"
     shadow.Image = "rbxassetid://5554236805"
     shadow.ImageColor3 = Color3.new(0, 0, 0)
-    shadow.ImageTransparency = transparency or 0.5
+    shadow.ImageTransparency = intensity or 0.5
     shadow.ScaleType = Enum.ScaleType.Slice
     shadow.SliceCenter = Rect.new(23, 23, 277, 277)
     shadow.BackgroundTransparency = 1
@@ -147,69 +184,35 @@ function Tundra.AddShadow(obj, transparency)
 end
 
 -- ====================
--- ELEMENT LOCKING SYSTEM
--- ====================
-function Tundra.LockElement(element)
-    Tundra.LockedElements[element] = true
-    if element:IsA("GuiButton") then
-        element.AutoButtonColor = false
-        element.Active = false
-        Tundra.Tween(element, {ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].DisabledText}, 0.2)
-    end
-end
-
-function Tundra.UnlockElement(element)
-    Tundra.LockedElements[element] = nil
-    if element:IsA("GuiButton") then
-        element.AutoButtonColor = true
-        element.Active = true
-        Tundra.Tween(element, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
-    end
-end
-
-function Tundra.IsLocked(element)
-    return Tundra.LockedElements[element] == true
-end
-
--- ====================
 -- SAVE MANAGER
 -- ====================
 Tundra.SaveManager = {
-    DefaultFileName = "TundraSettings.json",
     Data = {}
 }
 
-function Tundra.SaveManager:Load(filename)
-    local success, result = pcall(function()
-        if not isfile then return {} end
-        if isfile(filename or self.DefaultFileName) then
-            local data = readfile(filename or self.DefaultFileName)
-            return HttpService:JSONDecode(data)
+function Tundra.SaveManager:Load()
+    local success, data = pcall(function()
+        if readfile and isfile then
+            if isfile("TundraSettings.json") then
+                return HttpService:JSONDecode(readfile("TundraSettings.json"))
+            end
         end
         return {}
     end)
     
     if success then
-        self.Data = result
-        return result
-    else
-        warn("[Tundra] Failed to load settings:", result)
-        return {}
+        self.Data = data
+        return data
     end
+    return {}
 end
 
-function Tundra.SaveManager:Save(filename)
-    local success, result = pcall(function()
-        if not writefile then return false end
-        local json = HttpService:JSONEncode(self.Data)
-        writefile(filename or self.DefaultFileName, json)
-        return true
+function Tundra.SaveManager:Save()
+    pcall(function()
+        if writefile then
+            writefile("TundraSettings.json", HttpService:JSONEncode(self.Data))
+        end
     end)
-    
-    if not success then
-        warn("[Tundra] Failed to save settings:", result)
-    end
-    return success
 end
 
 function Tundra.SaveManager:Set(key, value)
@@ -222,97 +225,228 @@ function Tundra.SaveManager:Get(key, default)
 end
 
 -- ====================
--- WINDOW SYSTEM
+-- WINDOW SYSTEM (WITH PFP AREA)
 -- ====================
 function Tundra.CreateWindow(options)
     options = options or {}
     
-    local window = Tundra.Create("ScreenGui", {
-        Name = options.Name or "TundraWindow",
+    -- Create ScreenGui
+    local screenGui = Tundra.Create("ScreenGui", {
+        Name = options.Name or "TundraUI",
         ResetOnSpawn = false,
-        ZIndexBehavior = Enum.ZIndexBehavior.Global
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
+        DisplayOrder = 999
     })
     
-    local mainFrame = Tundra.Create("Frame", {
-        Parent = window,
-        Size = UDim2.new(0, options.Width or 500, 0, options.Height or 400),
-        Position = UDim2.new(0.5, -((options.Width or 500)/2), 0.5, -((options.Height or 400)/2)),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
-        BorderSizePixel = 0
+    -- Main container
+    local mainContainer = Tundra.Create("Frame", {
+        Parent = screenGui,
+        Size = UDim2.new(0, options.Width or 750, 0, options.Height or 550),
+        Position = UDim2.new(0.5, -((options.Width or 750)/2), 0.5, -((options.Height or 550)/2)),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].CardBackground,
+        BackgroundTransparency = 0.1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true
     })
     
-    Tundra.Roundify(mainFrame, 12)
-    Tundra.AddShadow(mainFrame, 0.3)
+    Tundra.Roundify(mainContainer, 16)
+    Tundra.CreateShadow(mainContainer, 0.3)
     
-    -- Title Bar
-    local titleBar = Tundra.Create("Frame", {
-        Parent = mainFrame,
-        Size = UDim2.new(1, 0, 0, 40),
+    -- Add acrylic blur background
+    local blur = Tundra.CreateBlur(0.3)
+    blur.Parent = mainContainer
+    
+    -- Top bar with PFP area
+    local topBar = Tundra.Create("Frame", {
+        Parent = mainContainer,
+        Size = UDim2.new(1, 0, 0, 100),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        BackgroundTransparency = 0.05,
         BorderSizePixel = 0
     })
     
     Tundra.Create("UICorner", {
-        Parent = titleBar,
-        CornerRadius = UDim.new(0, 12)
+        Parent = topBar,
+        CornerRadius = UDim.new(0, 16)
     })
     
-    local title = Tundra.Create("TextLabel", {
-        Parent = titleBar,
-        Size = UDim2.new(1, -80, 1, 0),
-        Position = UDim2.new(0, 15, 0, 0),
-        BackgroundTransparency = 1,
-        Text = options.Title or "Tundra Window",
-        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
-        TextSize = 18,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
-    })
-    
-    -- Close Button
-    local closeButton = Tundra.Create("TextButton", {
-        Parent = titleBar,
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(1, -35, 0.5, -15),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Danger,
-        Text = "×",
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 20,
-        Font = Enum.Font.SourceSansBold
-    })
-    
-    Tundra.Roundify(closeButton, 8)
-    
-    closeButton.MouseButton1Click:Connect(function()
-        Tundra.Tween(window, {Size = UDim2.new(0, 0, 0, 0)}, 0.2):Play()
-        task.wait(0.2)
-        window:Destroy()
-    end)
-    
-    -- Content Area
-    local content = Tundra.Create("Frame", {
-        Parent = mainFrame,
-        Size = UDim2.new(1, 0, 1, -40),
-        Position = UDim2.new(0, 0, 0, 40),
+    -- User PFP area (left side)
+    local userSection = Tundra.Create("Frame", {
+        Parent = topBar,
+        Size = UDim2.new(0, 300, 1, 0),
         BackgroundTransparency = 1
     })
     
-    -- Dragging
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
+    -- PFP frame
+    local pfpFrame = Tundra.Create("Frame", {
+        Parent = userSection,
+        Size = UDim2.new(0, 60, 0, 60),
+        Position = UDim2.new(0, 20, 0.5, -30),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(pfpFrame, 30)
+    
+    -- PFP image (using Roblox default avatar)
+    local pfpImage = Tundra.Create("ImageLabel", {
+        Parent = pfpFrame,
+        Size = UDim2.new(1, -4, 1, -4),
+        Position = UDim2.new(0, 2, 0, 2),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Image = "rbxasset://textures/ui/GuiImagePlaceholder.png",
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(pfpImage, 28)
+    
+    -- User info
+    local userName = Tundra.Create("TextLabel", {
+        Parent = userSection,
+        Size = UDim2.new(0, 200, 0, 25),
+        Position = UDim2.new(0, 90, 0.5, -25),
+        BackgroundTransparency = 1,
+        Text = Players.LocalPlayer.Name,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+    })
+    
+    local userStatus = Tundra.Create("TextLabel", {
+        Parent = userSection,
+        Size = UDim2.new(0, 200, 0, 20),
+        Position = UDim2.new(0, 90, 0.5, 0),
+        BackgroundTransparency = 1,
+        Text = "Status: Online",
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+    })
+    
+    -- Title area (center)
+    local titleArea = Tundra.Create("Frame", {
+        Parent = topBar,
+        Size = UDim2.new(0, 200, 1, 0),
+        Position = UDim2.new(0.5, -100, 0, 0),
+        BackgroundTransparency = 1
+    })
+    
+    local title = Tundra.Create("TextLabel", {
+        Parent = titleArea,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = options.Title or "Tundra UI",
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 24,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
+    })
+    
+    local subtitle = Tundra.Create("TextLabel", {
+        Parent = titleArea,
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 1, -30),
+        BackgroundTransparency = 1,
+        Text = "v" .. Tundra.Version,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 12,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+    })
+    
+    -- Action buttons (right side)
+    local actionArea = Tundra.Create("Frame", {
+        Parent = topBar,
+        Size = UDim2.new(0, 150, 1, 0),
+        Position = UDim2.new(1, -160, 0, 0),
+        BackgroundTransparency = 1
+    })
+    
+    -- Minimize button
+    local minimizeBtn = Tundra.Create("ImageButton", {
+        Parent = actionArea,
+        Size = UDim2.new(0, 32, 0, 32),
+        Position = UDim2.new(0, 10, 0.5, -16),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Image = Tundra.Assets.sun,
+        ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(minimizeBtn, 8)
+    
+    -- Close button
+    local closeBtn = Tundra.Create("ImageButton", {
+        Parent = actionArea,
+        Size = UDim2.new(0, 32, 0, 32),
+        Position = UDim2.new(1, -42, 0.5, -16),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Danger,
+        Image = Tundra.Assets.x,
+        ImageColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(closeBtn, 8)
+    
+    -- Tab bar
+    local tabBar = Tundra.Create("Frame", {
+        Parent = mainContainer,
+        Size = UDim2.new(1, 0, 0, 50),
+        Position = UDim2.new(0, 0, 0, 100),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        BackgroundTransparency = 0.05,
+        BorderSizePixel = 0
+    })
+    
+    -- Tab container
+    local tabContainer = Tundra.Create("Frame", {
+        Parent = tabBar,
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 20, 0, 0),
+        BackgroundTransparency = 1
+    })
+    
+    local tabList = Tundra.Create("UIListLayout", {
+        Parent = tabContainer,
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 10)
+    })
+    
+    -- Content area
+    local contentArea = Tundra.Create("Frame", {
+        Parent = mainContainer,
+        Size = UDim2.new(1, -40, 1, -170),
+        Position = UDim2.new(0, 20, 0, 160),
+        BackgroundTransparency = 1,
+        ClipsDescendants = true
+    })
+    
+    -- Button interactions
+    closeBtn.MouseButton1Click:Connect(function()
+        Tundra.Tween(mainContainer, {Size = UDim2.new(0, 0, 0, 0)}, 0.2):Play()
+        task.wait(0.2)
+        screenGui:Destroy()
+    end)
+    
+    minimizeBtn.MouseButton1Click:Connect(function()
+        local isDark = Tundra.CurrentTheme == "Dark"
+        Tundra.SetTheme(isDark and "Light" or "Dark")
+        minimizeBtn.Image = isDark and Tundra.Assets.moon or Tundra.Assets.sun
+    end)
+    
+    -- Dragging functionality
+    local dragging, dragInput, dragStart, startPos
     
     local function update(input)
         local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        mainContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
     
-    titleBar.InputBegan:Connect(function(input)
+    topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = mainFrame.Position
+            startPos = mainContainer.Position
             
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
@@ -322,7 +456,7 @@ function Tundra.CreateWindow(options)
         end
     end)
     
-    titleBar.InputChanged:Connect(function(input)
+    topBar.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             dragInput = input
         end
@@ -334,15 +468,36 @@ function Tundra.CreateWindow(options)
         end
     end)
     
+    -- Store tabs
+    local tabs = {}
+    local currentTab = nil
+    
     return {
-        Window = window,
-        Frame = mainFrame,
-        Content = content,
-        Title = title,
-        Close = closeButton,
+        ScreenGui = screenGui,
+        Container = mainContainer,
+        Content = contentArea,
+        TabContainer = tabContainer,
+        Tabs = tabs,
         
-        AddTab = function(self, tabName, icon)
-            return Tundra.CreateTab(self.Content, tabName, icon)
+        AddTab = function(self, name, icon)
+            local tab = Tundra.CreateTab(self.TabContainer, self.Content, name, icon)
+            tabs[name] = tab
+            
+            if #tabs == 1 then
+                self:SelectTab(name)
+            end
+            
+            return tab
+        end,
+        
+        SelectTab = function(self, name)
+            if tabs[name] then
+                if currentTab then
+                    tabs[currentTab].Deactivate()
+                end
+                tabs[name].Activate()
+                currentTab = name
+            end
         end
     }
 end
@@ -350,92 +505,146 @@ end
 -- ====================
 -- TAB SYSTEM
 -- ====================
-function Tundra.CreateTab(parent, tabName, icon)
+function Tundra.CreateTab(parent, contentParent, name, icon)
     local tabButton = Tundra.Create("TextButton", {
         Parent = parent,
-        Size = UDim2.new(0, 120, 0, 35),
+        Size = UDim2.new(0, 120, 1, 0),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
-        Text = tabName,
-        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
-        TextSize = 14,
-        Font = Enum.Font.SourceSansSemibold
+        BackgroundTransparency = 0.8,
+        Text = "",
+        AutoButtonColor = false
     })
     
-    Tundra.Roundify(tabButton, 6)
+    Tundra.Roundify(tabButton, 8)
     
+    -- Icon
+    local tabIcon = Tundra.Create("ImageLabel", {
+        Parent = tabButton,
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(0, 15, 0.5, -12),
+        BackgroundTransparency = 1,
+        Image = icon or Tundra.Assets.home,
+        ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText
+    })
+    
+    -- Text
+    local tabText = Tundra.Create("TextLabel", {
+        Parent = tabButton,
+        Size = UDim2.new(0, 70, 0, 25),
+        Position = UDim2.new(0, 50, 0.5, -12),
+        BackgroundTransparency = 1,
+        Text = name,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+    })
+    
+    -- Tab content
     local tabContent = Tundra.Create("ScrollingFrame", {
-        Parent = parent,
+        Parent = contentParent,
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        ScrollBarThickness = 4,
         ScrollBarImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Border,
+        ScrollBarThickness = 4,
         CanvasSize = UDim2.new(0, 0, 0, 0),
         Visible = false
     })
     
-    local listLayout = Tundra.Create("UIListLayout", {
+    local contentList = Tundra.Create("UIListLayout", {
         Parent = tabContent,
         SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 8)
+        Padding = UDim.new(0, 15)
     })
     
-    local padding = Tundra.Create("UIPadding", {
+    local contentPadding = Tundra.Create("UIPadding", {
         Parent = tabContent,
+        PaddingTop = UDim.new(0, 10),
         PaddingLeft = UDim.new(0, 10),
-        PaddingTop = UDim.new(0, 10)
+        PaddingRight = UDim.new(0, 10)
     })
+    
+    -- State
+    local active = false
+    
+    local function activate()
+        active = true
+        Tundra.Tween(tabButton, {BackgroundTransparency = 0}, 0.2)
+        Tundra.Tween(tabIcon, {ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary}, 0.2)
+        Tundra.Tween(tabText, {TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary}, 0.2)
+        tabContent.Visible = true
+    end
+    
+    local function deactivate()
+        active = false
+        Tundra.Tween(tabButton, {BackgroundTransparency = 0.8}, 0.2)
+        Tundra.Tween(tabIcon, {ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText}, 0.2)
+        Tundra.Tween(tabText, {TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText}, 0.2)
+        tabContent.Visible = false
+    end
     
     tabButton.MouseButton1Click:Connect(function()
-        -- Hide all tab contents
-        for _, child in ipairs(parent:GetChildren()) do
-            if child:IsA("ScrollingFrame") and child.Name == "TabContent" then
-                child.Visible = false
+        if not active then
+            -- Notify parent to deactivate other tabs
+            for _, sibling in ipairs(parent:GetChildren()) do
+                if sibling:IsA("TextButton") and sibling ~= tabButton then
+                    -- This would normally be handled by the window
+                end
             end
+            activate()
         end
-        
-        -- Show this tab's content
-        tabContent.Visible = true
-        
-        -- Update button appearance
-        Tundra.Tween(tabButton, {
-            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary
-        }, 0.2)
+    end)
+    
+    -- Hover effects
+    tabButton.MouseEnter:Connect(function()
+        if not active then
+            Tundra.Tween(tabButton, {BackgroundTransparency = 0.5}, 0.2)
+        end
+    end)
+    
+    tabButton.MouseLeave:Connect(function()
+        if not active then
+            Tundra.Tween(tabButton, {BackgroundTransparency = 0.8}, 0.2)
+        end
     end)
     
     return {
         Button = tabButton,
         Content = tabContent,
         
-        AddSection = function(self, sectionName)
-            return Tundra.CreateSection(self.Content, sectionName)
+        Activate = activate,
+        Deactivate = deactivate,
+        
+        AddSection = function(self, title)
+            return Tundra.CreateSection(self.Content, title)
         end,
         
-        AddButton = function(self, buttonName, callback)
-            return Tundra.CreateButton(self.Content, buttonName, callback)
+        AddButton = function(self, text, callback, icon)
+            return Tundra.CreateButton(self.Content, text, callback, icon)
         end,
         
-        AddToggle = function(self, toggleName, defaultValue, callback, risky)
-            return Tundra.CreateToggle(self.Content, toggleName, defaultValue, callback, risky)
+        AddToggle = function(self, text, default, callback, risky)
+            return Tundra.CreateToggle(self.Content, text, default, callback, risky)
         end,
         
-        AddSlider = function(self, sliderName, minValue, maxValue, defaultValue, callback)
-            return Tundra.CreateSlider(self.Content, sliderName, minValue, maxValue, defaultValue, callback)
+        AddSlider = function(self, text, min, max, default, callback)
+            return Tundra.CreateSlider(self.Content, text, min, max, default, callback)
         end,
         
-        AddDropdown = function(self, dropdownName, options, defaultOption, callback)
-            return Tundra.CreateDropdown(self.Content, dropdownName, options, defaultOption, callback)
+        AddDropdown = function(self, text, options, default, callback)
+            return Tundra.CreateDropdown(self.Content, text, options, default, callback)
         end,
         
-        AddKeybind = function(self, keybindName, defaultKey, callback, mode)
-            return Tundra.CreateKeybind(self.Content, keybindName, defaultKey, callback, mode)
+        AddKeybind = function(self, text, defaultKey, callback, mode)
+            return Tundra.CreateKeybind(self.Content, text, defaultKey, callback, mode)
         end,
         
-        AddInput = function(self, inputName, placeholder, callback)
-            return Tundra.CreateInput(self.Content, inputName, placeholder, callback)
+        AddInput = function(self, text, placeholder, callback)
+            return Tundra.CreateInput(self.Content, text, placeholder, callback)
         end,
         
-        AddLabel = function(self, labelText)
-            return Tundra.CreateLabel(self.Content, labelText)
+        AddLabel = function(self, text)
+            return Tundra.CreateLabel(self.Content, text)
         end
     }
 end
@@ -443,217 +652,205 @@ end
 -- ====================
 -- SECTION
 -- ====================
-function Tundra.CreateSection(parent, sectionName)
+function Tundra.CreateSection(parent, title)
     local section = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 40),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].TertiaryBackground,
+        Size = UDim2.new(1, 0, 0, 50),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].CardBackground,
+        BackgroundTransparency = 0.1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    Tundra.Roundify(section, 8)
+    Tundra.Roundify(section, 12)
+    Tundra.CreateShadow(section, 0.2)
     
-    local label = Tundra.Create("TextLabel", {
+    local titleLabel = Tundra.Create("TextLabel", {
         Parent = section,
         Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0, 10, 0, 0),
+        Position = UDim2.new(0, 15, 0, 0),
         BackgroundTransparency = 1,
-        Text = sectionName,
+        Text = title,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
     })
     
     return {
         Frame = section,
-        Label = label
+        Label = titleLabel
     }
 end
 
 -- ====================
 -- BUTTON
 -- ====================
-function Tundra.CreateButton(parent, buttonName, callback)
+function Tundra.CreateButton(parent, text, callback, icon)
     local button = Tundra.Create("TextButton", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 35),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary,
-        Text = buttonName,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 14,
-        Font = Enum.Font.SourceSansSemibold,
-        LayoutOrder = parent:GetChildren().Size,
-        AutoButtonColor = false
+        Size = UDim2.new(1, 0, 0, 45),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Text = "",
+        AutoButtonColor = false,
+        LayoutOrder = parent:GetChildren().Size
     })
     
-    Tundra.Roundify(button, 6)
+    Tundra.Roundify(button, 10)
     
+    local buttonContent = Tundra.Create("Frame", {
+        Parent = button,
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        BackgroundTransparency = 1
+    })
+    
+    if icon then
+        local buttonIcon = Tundra.Create("ImageLabel", {
+            Parent = buttonContent,
+            Size = UDim2.new(0, 24, 0, 24),
+            Position = UDim2.new(0, 0, 0.5, -12),
+            BackgroundTransparency = 1,
+            Image = icon,
+            ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Text
+        })
+    end
+    
+    local buttonText = Tundra.Create("TextLabel", {
+        Parent = buttonContent,
+        Size = UDim2.new(1, -30, 1, 0),
+        Position = UDim2.new(0, 30, 0, 0),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+    })
+    
+    -- Hover effects
     local originalColor = button.BackgroundColor3
-    local hoverColor = Tundra.Themes[Tundra.CurrentTheme].PrimaryHover
-    local pressedColor = Tundra.Themes[Tundra.CurrentTheme].PrimaryPressed
+    local hoverColor = Color3.new(
+        originalColor.R * 0.9,
+        originalColor.G * 0.9,
+        originalColor.B * 0.9
+    )
     
     button.MouseEnter:Connect(function()
-        if not Tundra.IsLocked(button) then
-            Tundra.Tween(button, {BackgroundColor3 = hoverColor}, 0.2)
-        end
+        Tundra.Tween(button, {BackgroundColor3 = hoverColor}, 0.2)
     end)
     
     button.MouseLeave:Connect(function()
-        if not Tundra.IsLocked(button) then
-            Tundra.Tween(button, {BackgroundColor3 = originalColor}, 0.2)
-        end
+        Tundra.Tween(button, {BackgroundColor3 = originalColor}, 0.2)
     end)
     
-    button.MouseButton1Down:Connect(function()
-        if not Tundra.IsLocked(button) then
-            Tundra.Tween(button, {BackgroundColor3 = pressedColor}, 0.1)
-        end
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        if not Tundra.IsLocked(button) then
-            Tundra.Tween(button, {BackgroundColor3 = hoverColor}, 0.1)
-            if callback then
-                callback()
-            end
+    button.MouseButton1Click:Connect(function()
+        if callback then
+            callback()
         end
     end)
     
     return {
         Button = button,
-        Lock = function()
-            Tundra.LockElement(button)
+        SetText = function(self, newText)
+            buttonText.Text = newText
         end,
-        Unlock = function()
-            Tundra.UnlockElement(button)
-        end,
-        SetText = function(text)
-            button.Text = text
-        end,
-        SetCallback = function(newCallback)
+        SetCallback = function(self, newCallback)
             callback = newCallback
         end
     }
 end
 
 -- ====================
--- TOGGLE (WITH RISKY BOOL)
+-- TOGGLE
 -- ====================
-function Tundra.CreateToggle(parent, toggleName, defaultValue, callback, risky)
-    local toggle = {
-        Value = defaultValue or false,
-        Risky = risky or false
-    }
+function Tundra.CreateToggle(parent, text, default, callback, risky)
+    local state = default or false
     
     local container = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 35),
+        Size = UDim2.new(1, 0, 0, 40),
         BackgroundTransparency = 1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    local label = Tundra.Create("TextLabel", {
+    local textLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(1, -50, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -60, 1, 0),
         BackgroundTransparency = 1,
-        Text = toggleName,
+        Text = text,
         TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
     })
     
-    local toggleFrame = Tundra.Create("Frame", {
+    -- Use Fluent UI style toggle
+    local toggleOuter = Tundra.Create("Frame", {
         Parent = container,
-        Size = UDim2.new(0, 40, 0, 20),
-        Position = UDim2.new(1, -40, 0.5, -10),
+        Size = UDim2.new(0, 50, 0, 28),
+        Position = UDim2.new(1, -50, 0.5, -14),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff,
         BorderSizePixel = 0
     })
     
-    Tundra.Roundify(toggleFrame, 10)
+    Tundra.Roundify(toggleOuter, 14)
     
-    local toggleCircle = Tundra.Create("Frame", {
-        Parent = toggleFrame,
-        Size = UDim2.new(0, 16, 0, 16),
-        Position = UDim2.new(0, 2, 0.5, -8),
+    local toggleInner = Tundra.Create("Frame", {
+        Parent = toggleOuter,
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(0, 2, 0.5, -12),
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0
     })
     
-    Tundra.Roundify(toggleCircle, 8)
+    Tundra.Roundify(toggleInner, 12)
     
-    local function updateToggle()
-        if toggle.Value then
-            Tundra.Tween(toggleFrame, {
+    local function update()
+        if state then
+            Tundra.Tween(toggleOuter, {
                 BackgroundColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].ToggleOn
             }, 0.2)
-            Tundra.Tween(toggleCircle, {
-                Position = UDim2.new(1, -18, 0.5, -8)
+            Tundra.Tween(toggleInner, {
+                Position = UDim2.new(1, -26, 0.5, -12)
             }, 0.2)
         else
-            Tundra.Tween(toggleFrame, {
+            Tundra.Tween(toggleOuter, {
                 BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff
             }, 0.2)
-            Tundra.Tween(toggleCircle, {
-                Position = UDim2.new(0, 2, 0.5, -8)
+            Tundra.Tween(toggleInner, {
+                Position = UDim2.new(0, 2, 0.5, -12)
             }, 0.2)
         end
     end
     
-    toggleFrame.InputBegan:Connect(function(input)
+    toggleOuter.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if not Tundra.IsLocked(toggleFrame) then
-                toggle.Value = not toggle.Value
-                updateToggle()
-                if callback then
-                    callback(toggle.Value)
-                end
+            state = not state
+            update()
+            if callback then
+                callback(state)
             end
         end
     end)
     
-    updateToggle()
+    update()
     
     return {
-        Frame = container,
-        Label = label,
-        Toggle = toggleFrame,
-        
+        Container = container,
         GetValue = function()
-            return toggle.Value
+            return state
         end,
-        
-        SetValue = function(value, triggerCallback)
-            toggle.Value = value
-            updateToggle()
-            if triggerCallback and callback then
-                callback(toggle.Value)
+        SetValue = function(self, value, trigger)
+            state = value
+            update()
+            if trigger and callback then
+                callback(state)
             end
         end,
-        
-        Toggle = function()
-            toggle.Value = not toggle.Value
-            updateToggle()
-            if callback then
-                callback(toggle.Value)
-            end
-        end,
-        
-        Lock = function()
-            Tundra.LockElement(toggleFrame)
-        end,
-        
-        Unlock = function()
-            Tundra.UnlockElement(toggleFrame)
-        end,
-        
-        SetRisky = function(isRisky)
+        SetRisky = function(self, isRisky)
             risky = isRisky
-            label.TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text
-            updateToggle()
+            textLabel.TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text
+            update()
         end
     }
 end
@@ -661,131 +858,121 @@ end
 -- ====================
 -- SLIDER
 -- ====================
-function Tundra.CreateSlider(parent, sliderName, minValue, maxValue, defaultValue, callback)
-    local slider = {
-        Value = defaultValue or minValue,
-        Min = minValue or 0,
-        Max = maxValue or 100,
-        Dragging = false
-    }
+function Tundra.CreateSlider(parent, text, min, max, default, callback)
+    local value = default or min
+    local dragging = false
     
     local container = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 60),
+        Size = UDim2.new(1, 0, 0, 70),
         BackgroundTransparency = 1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    local label = Tundra.Create("TextLabel", {
+    local textLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 25),
         BackgroundTransparency = 1,
-        Text = sliderName,
+        Text = text,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
     })
     
     local valueLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(0, 40, 0, 20),
-        Position = UDim2.new(1, -40, 0, 0),
+        Size = UDim2.new(0, 50, 0, 25),
+        Position = UDim2.new(1, -50, 0, 0),
         BackgroundTransparency = 1,
-        Text = tostring(defaultValue or minValue),
+        Text = tostring(value),
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        Font = Enum.Font.SourceSans
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
     })
     
-    local track = Tundra.Create("Frame", {
+    local sliderTrack = Tundra.Create("Frame", {
         Parent = container,
         Size = UDim2.new(1, 0, 0, 6),
-        Position = UDim2.new(0, 0, 1, -16),
+        Position = UDim2.new(0, 0, 1, -35),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff,
         BorderSizePixel = 0
     })
     
-    Tundra.Roundify(track, 3)
+    Tundra.Roundify(sliderTrack, 3)
     
-    local fill = Tundra.Create("Frame", {
-        Parent = track,
+    local sliderFill = Tundra.Create("Frame", {
+        Parent = sliderTrack,
         Size = UDim2.new(0, 0, 1, 0),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary,
         BorderSizePixel = 0
     })
     
-    Tundra.Roundify(fill, 3)
+    Tundra.Roundify(sliderFill, 3)
     
-    local thumb = Tundra.Create("Frame", {
-        Parent = track,
-        Size = UDim2.new(0, 16, 0, 16),
-        Position = UDim2.new(0, -8, 0.5, -8),
+    local sliderThumb = Tundra.Create("Frame", {
+        Parent = sliderTrack,
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(0, -10, 0.5, -10),
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0
     })
     
-    Tundra.Roundify(thumb, 8)
-    Tundra.AddShadow(thumb, 0.3)
+    Tundra.Roundify(sliderThumb, 10)
+    Tundra.CreateShadow(sliderThumb, 0.3)
     
-    local function updateSlider(value)
-        slider.Value = math.clamp(value, slider.Min, slider.Max)
-        local percentage = (slider.Value - slider.Min) / (slider.Max - slider.Min)
+    local function setValue(newValue)
+        value = math.clamp(newValue, min, max)
+        local percentage = (value - min) / (max - min)
         
-        fill.Size = UDim2.new(percentage, 0, 1, 0)
-        thumb.Position = UDim2.new(percentage, -8, 0.5, -8)
-        valueLabel.Text = string.format("%.1f", slider.Value)
+        sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+        sliderThumb.Position = UDim2.new(percentage, -10, 0.5, -10)
+        valueLabel.Text = string.format("%.1f", value)
         
         if callback then
-            callback(slider.Value)
+            callback(value)
         end
     end
     
-    local function onInputChanged(input)
-        if slider.Dragging then
+    local function updateFromMouse()
+        if dragging then
             local mousePos = UserInputService:GetMouseLocation()
-            local trackPos = track.AbsolutePosition
-            local trackSize = track.AbsoluteSize
+            local trackPos = sliderTrack.AbsolutePosition
+            local trackSize = sliderTrack.AbsoluteSize
             
-            local relativeX = math.clamp((mousePos.X - trackPos.X) / trackSize.X, 0, 1)
-            local value = slider.Min + (relativeX * (slider.Max - slider.Min))
-            updateSlider(value)
+            local relative = math.clamp((mousePos.X - trackPos.X) / trackSize.X, 0, 1)
+            setValue(min + (relative * (max - min)))
         end
     end
     
-    track.InputBegan:Connect(function(input)
+    sliderTrack.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if not Tundra.IsLocked(track) then
-                slider.Dragging = true
-                onInputChanged(input)
-            end
+            dragging = true
+            updateFromMouse()
         end
     end)
     
-    track.InputEnded:Connect(function(input)
+    sliderTrack.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            slider.Dragging = false
+            dragging = false
         end
     end)
     
-    UserInputService.InputChanged:Connect(onInputChanged)
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateFromMouse()
+        end
+    end)
     
-    updateSlider(defaultValue or minValue)
+    setValue(default or min)
     
     return {
-        Frame = container,
+        Container = container,
         GetValue = function()
-            return slider.Value
+            return value
         end,
-        SetValue = function(value)
-            updateSlider(value)
-        end,
-        Lock = function()
-            Tundra.LockElement(track)
-        end,
-        Unlock = function()
-            Tundra.UnlockElement(track)
+        SetValue = function(self, newValue)
+            setValue(newValue)
         end
     }
 end
@@ -793,104 +980,106 @@ end
 -- ====================
 -- DROPDOWN
 -- ====================
-function Tundra.CreateDropdown(parent, dropdownName, options, defaultOption, callback)
-    local dropdown = {
-        Value = defaultOption or options[1],
-        Options = options,
-        Open = false
-    }
+function Tundra.CreateDropdown(parent, text, options, default, callback)
+    local selected = default or options[1]
+    local open = false
     
     local container = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 35),
+        Size = UDim2.new(1, 0, 0, 40),
         BackgroundTransparency = 1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    local label = Tundra.Create("TextLabel", {
+    local textLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(0, 100, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -10, 1, 0),
         BackgroundTransparency = 1,
-        Text = dropdownName,
+        Text = text,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
     })
     
-    local button = Tundra.Create("TextButton", {
+    local dropdownButton = Tundra.Create("TextButton", {
         Parent = container,
-        Size = UDim2.new(1, -100, 1, 0),
-        Position = UDim2.new(0, 100, 0, 0),
+        Size = UDim2.new(0, 150, 0, 40),
+        Position = UDim2.new(1, -150, 0, 0),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
-        Text = dropdown.Value,
+        Text = selected,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
-        Font = Enum.Font.SourceSans
+        AutoButtonColor = false
     })
     
-    Tundra.Roundify(button, 6)
+    Tundra.Roundify(dropdownButton, 8)
     
-    local dropdownFrame = Tundra.Create("ScrollingFrame", {
+    local dropdownIcon = Tundra.Create("ImageLabel", {
+        Parent = dropdownButton,
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(1, -25, 0.5, -10),
+        BackgroundTransparency = 1,
+        Image = Tundra.Assets.chevron_down,
+        ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Text
+    })
+    
+    local dropdownContent = Tundra.Create("ScrollingFrame", {
         Parent = container,
-        Size = UDim2.new(1, -100, 0, 0),
-        Position = UDim2.new(0, 100, 1, 5),
+        Size = UDim2.new(0, 150, 0, 0),
+        Position = UDim2.new(1, -150, 1, 5),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
         ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Border,
-        BorderSizePixel = 0,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         Visible = false,
         ZIndex = 10
     })
     
-    Tundra.Roundify(dropdownFrame, 6)
-    Tundra.AddShadow(dropdownFrame, 0.3)
+    Tundra.Roundify(dropdownContent, 8)
+    Tundra.CreateShadow(dropdownContent, 0.3)
     
-    local listLayout = Tundra.Create("UIListLayout", {
-        Parent = dropdownFrame,
+    local contentList = Tundra.Create("UIListLayout", {
+        Parent = dropdownContent,
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    local function toggleDropdown()
-        if Tundra.IsLocked(button) then return end
-        
-        dropdown.Open = not dropdown.Open
-        if dropdown.Open then
-            Tundra.Tween(dropdownFrame, {
-                Size = UDim2.new(1, -100, 0, math.min(#options * 30, 150))
+    local function toggle()
+        open = not open
+        if open then
+            Tundra.Tween(dropdownContent, {
+                Size = UDim2.new(0, 150, 0, math.min(#options * 35, 150))
             }, 0.2)
-            dropdownFrame.Visible = true
+            dropdownContent.Visible = true
         else
-            Tundra.Tween(dropdownFrame, {
-                Size = UDim2.new(1, -100, 0, 0)
-            }, 0.2):Play()
+            Tundra.Tween(dropdownContent, {
+                Size = UDim2.new(0, 150, 0, 0)
+            }, 0.2)
             task.wait(0.2)
-            dropdownFrame.Visible = false
+            dropdownContent.Visible = false
         end
     end
     
-    button.MouseButton1Click:Connect(toggleDropdown)
+    dropdownButton.MouseButton1Click:Connect(toggle)
     
     for _, option in ipairs(options) do
         local optionButton = Tundra.Create("TextButton", {
-            Parent = dropdownFrame,
-            Size = UDim2.new(1, -10, 0, 30),
+            Parent = dropdownContent,
+            Size = UDim2.new(1, -10, 0, 35),
             Position = UDim2.new(0, 5, 0, 0),
             BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
             Text = option,
             TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
             TextSize = 14,
-            Font = Enum.Font.SourceSans,
+            AutoButtonColor = false,
             LayoutOrder = _
         })
         
-        Tundra.Roundify(optionButton, 4)
+        Tundra.Roundify(optionButton, 6)
         
         optionButton.MouseButton1Click:Connect(function()
-            dropdown.Value = option
-            button.Text = option
-            toggleDropdown()
+            selected = option
+            dropdownButton.Text = option
+            toggle()
             if callback then
                 callback(option)
             end
@@ -910,24 +1099,18 @@ function Tundra.CreateDropdown(parent, dropdownName, options, defaultOption, cal
     end
     
     return {
-        Frame = container,
+        Container = container,
         GetValue = function()
-            return dropdown.Value
+            return selected
         end,
-        SetValue = function(value)
+        SetValue = function(self, value)
             if table.find(options, value) then
-                dropdown.Value = value
-                button.Text = value
+                selected = value
+                dropdownButton.Text = value
                 if callback then
                     callback(value)
                 end
             end
-        end,
-        Lock = function()
-            Tundra.LockElement(button)
-        end,
-        Unlock = function()
-            Tundra.UnlockElement(button)
         end
     }
 end
@@ -935,143 +1118,95 @@ end
 -- ====================
 -- KEYBIND
 -- ====================
-function Tundra.CreateKeybind(parent, keybindName, defaultKey, callback, mode)
-    mode = mode or "Toggle" -- Toggle, Hold, Always
-    
-    local keybind = {
-        Value = defaultKey or Enum.KeyCode.E,
-        Mode = mode,
-        Active = false,
-        Listening = false
-    }
+function Tundra.CreateKeybind(parent, text, defaultKey, callback, mode)
+    mode = mode or "Toggle"
+    local key = defaultKey or Enum.KeyCode.E
+    local listening = false
     
     local container = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 35),
+        Size = UDim2.new(1, 0, 0, 40),
         BackgroundTransparency = 1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    local label = Tundra.Create("TextLabel", {
+    local textLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(1, -100, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -120, 1, 0),
         BackgroundTransparency = 1,
-        Text = keybindName,
+        Text = text,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
     })
     
-    local button = Tundra.Create("TextButton", {
+    local keyButton = Tundra.Create("TextButton", {
         Parent = container,
-        Size = UDim2.new(0, 90, 1, 0),
-        Position = UDim2.new(1, -90, 0, 0),
+        Size = UDim2.new(0, 110, 0, 40),
+        Position = UDim2.new(1, -110, 0, 0),
         BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
-        Text = tostring(keybind.Value):gsub("Enum.KeyCode.", ""),
+        Text = tostring(key):gsub("Enum.KeyCode.", ""),
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
-        Font = Enum.Font.SourceSans
+        AutoButtonColor = false
     })
     
-    Tundra.Roundify(button, 6)
+    Tundra.Roundify(keyButton, 8)
     
-    local function setKey(key)
-        keybind.Value = key
-        button.Text = tostring(key):gsub("Enum.KeyCode.", "")
-        keybind.Listening = false
-        button.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
+    local function setKey(newKey)
+        key = newKey
+        keyButton.Text = tostring(key):gsub("Enum.KeyCode.", "")
+        listening = false
+        keyButton.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
     end
     
-    button.MouseButton1Click:Connect(function()
-        if not Tundra.IsLocked(button) then
-            keybind.Listening = true
-            button.Text = "..."
-            button.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary
-        end
+    keyButton.MouseButton1Click:Connect(function()
+        listening = true
+        keyButton.Text = "..."
+        keyButton.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary
     end)
     
     UserInputService.InputBegan:Connect(function(input)
-        if keybind.Listening then
-            if input.UserInputType == Enum.UserInputType.Keyboard then
-                setKey(input.KeyCode)
-            end
-        elseif input.KeyCode == keybind.Value then
-            if mode == "Toggle" then
-                keybind.Active = not keybind.Active
-                if callback then
-                    callback(keybind.Active)
-                end
-            elseif mode == "Hold" then
-                keybind.Active = true
-                if callback then
-                    callback(true)
-                end
-            elseif mode == "Always" then
-                if callback then
-                    callback()
-                end
-            end
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if mode == "Hold" and input.KeyCode == keybind.Value then
-            keybind.Active = false
-            if callback then
-                callback(false)
-            end
+        if listening and input.UserInputType == Enum.UserInputType.Keyboard then
+            setKey(input.KeyCode)
         end
     end)
     
     return {
-        Frame = container,
+        Container = container,
         GetKey = function()
-            return keybind.Value
+            return key
         end,
-        SetKey = function(key)
-            setKey(key)
-        end,
-        GetMode = function()
-            return keybind.Mode
-        end,
-        SetMode = function(newMode)
-            keybind.Mode = newMode
-        end,
-        Lock = function()
-            Tundra.LockElement(button)
-        end,
-        Unlock = function()
-            Tundra.UnlockElement(button)
+        SetKey = function(self, newKey)
+            setKey(newKey)
         end
     }
 end
 
 -- ====================
--- INPUT FIELD
+-- INPUT
 -- ====================
-function Tundra.CreateInput(parent, inputName, placeholder, callback)
+function Tundra.CreateInput(parent, text, placeholder, callback)
     local container = Tundra.Create("Frame", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 60),
+        Size = UDim2.new(1, 0, 0, 60),
         BackgroundTransparency = 1,
         LayoutOrder = parent:GetChildren().Size
     })
     
-    local label = Tundra.Create("TextLabel", {
+    local textLabel = Tundra.Create("TextLabel", {
         Parent = container,
-        Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 25),
         BackgroundTransparency = 1,
-        Text = inputName,
+        Text = text,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
     })
     
-    local textBox = Tundra.Create("TextBox", {
+    local inputBox = Tundra.Create("TextBox", {
         Parent = container,
         Size = UDim2.new(1, 0, 0, 35),
         Position = UDim2.new(0, 0, 0, 25),
@@ -1079,44 +1214,26 @@ function Tundra.CreateInput(parent, inputName, placeholder, callback)
         Text = "",
         PlaceholderText = placeholder or "Enter text...",
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
-        PlaceholderColor3 = Tundra.Themes[Tundra.CurrentTheme].DisabledText,
+        PlaceholderColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        Font = Enum.Font.SourceSans,
         ClearTextOnFocus = false
     })
     
-    Tundra.Roundify(textBox, 6)
+    Tundra.Roundify(inputBox, 8)
     
-    textBox.Focused:Connect(function()
-        Tundra.Tween(textBox, {
-            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].TertiaryBackground
-        }, 0.2)
-    end)
-    
-    textBox.FocusLost:Connect(function()
-        Tundra.Tween(textBox, {
-            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
-        }, 0.2)
+    inputBox.FocusLost:Connect(function()
         if callback then
-            callback(textBox.Text)
+            callback(inputBox.Text)
         end
     end)
     
     return {
-        Frame = container,
+        Container = container,
         GetText = function()
-            return textBox.Text
+            return inputBox.Text
         end,
-        SetText = function(text)
-            textBox.Text = text
-        end,
-        Lock = function()
-            Tundra.LockElement(textBox)
-            textBox.TextEditable = false
-        end,
-        Unlock = function()
-            Tundra.UnlockElement(textBox)
-            textBox.TextEditable = true
+        SetText = function(self, text)
+            inputBox.Text = text
         end
     }
 end
@@ -1124,104 +1241,185 @@ end
 -- ====================
 -- LABEL
 -- ====================
-function Tundra.CreateLabel(parent, labelText)
+function Tundra.CreateLabel(parent, text)
     local label = Tundra.Create("TextLabel", {
         Parent = parent,
-        Size = UDim2.new(1, -20, 0, 25),
+        Size = UDim2.new(1, 0, 0, 25),
         BackgroundTransparency = 1,
-        Text = labelText,
+        Text = text,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSans,
+        TextWrapped = true,
         LayoutOrder = parent:GetChildren().Size,
-        TextWrapped = true
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
     })
     
     return {
         Label = label,
-        SetText = function(text)
-            label.Text = text
+        SetText = function(self, newText)
+            label.Text = newText
         end
     }
+end
+
+-- ====================
+-- NOTIFICATION SYSTEM
+-- ====================
+function Tundra.Notify(title, message, duration, type)
+    duration = duration or 5
+    type = type or "Info"
+    
+    local colors = {
+        Info = Tundra.Themes[Tundra.CurrentTheme].Primary,
+        Success = Tundra.Themes[Tundra.CurrentTheme].Success,
+        Warning = Tundra.Themes[Tundra.CurrentTheme].Warning,
+        Error = Tundra.Themes[Tundra.CurrentTheme].Danger
+    }
+    
+    local screenGui = Tundra.Create("ScreenGui", {
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
+        DisplayOrder = 1000
+    })
+    
+    local notification = Tundra.Create("Frame", {
+        Parent = screenGui,
+        Size = UDim2.new(0, 300, 0, 80),
+        Position = UDim2.new(1, 320, 1, -100),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].CardBackground,
+        BackgroundTransparency = 0.1
+    })
+    
+    Tundra.Roundify(notification, 12)
+    Tundra.CreateShadow(notification, 0.3)
+    
+    local accent = Tundra.Create("Frame", {
+        Parent = notification,
+        Size = UDim2.new(0, 4, 1, -20),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundColor3 = colors[type],
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(accent, 2)
+    
+    local titleLabel = Tundra.Create("TextLabel", {
+        Parent = notification,
+        Size = UDim2.new(1, -30, 0, 25),
+        Position = UDim2.new(0, 25, 0, 10),
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
+    })
+    
+    local messageLabel = Tundra.Create("TextLabel", {
+        Parent = notification,
+        Size = UDim2.new(1, -30, 0, 40),
+        Position = UDim2.new(0, 25, 0, 35),
+        BackgroundTransparency = 1,
+        Text = message,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+    })
+    
+    -- Parent to CoreGui
+    pcall(function()
+        screenGui.Parent = game:GetService("CoreGui")
+    end)
+    
+    -- Slide in
+    Tundra.Tween(notification, {
+        Position = UDim2.new(1, -320, 1, -100)
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    
+    -- Wait and slide out
+    task.wait(duration)
+    
+    Tundra.Tween(notification, {
+        Position = UDim2.new(1, 320, 1, -100)
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+    
+    task.wait(0.3)
+    screenGui:Destroy()
 end
 
 -- ====================
 -- WARNING BOX
 -- ====================
 function Tundra.ShowWarning(title, message, buttons)
-    local warning = Tundra.Create("ScreenGui", {
-        Name = "TundraWarning",
+    local screenGui = Tundra.Create("ScreenGui", {
         ResetOnSpawn = false,
-        ZIndexBehavior = Enum.ZIndexBehavior.Global
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
+        DisplayOrder = 1001
     })
     
     local overlay = Tundra.Create("Frame", {
-        Parent = warning,
+        Parent = screenGui,
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.5,
-        BorderSizePixel = 0
+        BackgroundTransparency = 0.5
     })
     
-    local mainFrame = Tundra.Create("Frame", {
+    local warningBox = Tundra.Create("Frame", {
         Parent = overlay,
-        Size = UDim2.new(0, 400, 0, 200),
-        Position = UDim2.new(0.5, -200, 0.5, -100),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
-        BorderSizePixel = 0
+        Size = UDim2.new(0, 400, 0, 220),
+        Position = UDim2.new(0.5, -200, 0.5, -110),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].CardBackground,
+        BackgroundTransparency = 0.1
     })
     
-    Tundra.Roundify(mainFrame, 12)
-    Tundra.AddShadow(mainFrame, 0.5)
+    Tundra.Roundify(warningBox, 16)
+    Tundra.CreateShadow(warningBox, 0.5)
     
-    -- Warning Icon
-    local icon = Tundra.Create("TextLabel", {
-        Parent = mainFrame,
+    local warningIcon = Tundra.Create("ImageLabel", {
+        Parent = warningBox,
         Size = UDim2.new(0, 50, 0, 50),
         Position = UDim2.new(0.5, -25, 0, 20),
         BackgroundTransparency = 1,
-        Text = "⚠",
-        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Warning,
-        TextSize = 40,
-        Font = Enum.Font.SourceSansBold
+        Image = Tundra.Assets.warning,
+        ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Warning
     })
     
-    -- Title
     local titleLabel = Tundra.Create("TextLabel", {
-        Parent = mainFrame,
+        Parent = warningBox,
         Size = UDim2.new(1, -40, 0, 30),
         Position = UDim2.new(0, 20, 0, 80),
         BackgroundTransparency = 1,
         Text = title,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
-        TextSize = 18,
-        Font = Enum.Font.SourceSansSemibold,
+        TextSize = 20,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold),
         TextWrapped = true
     })
     
-    -- Message
     local messageLabel = Tundra.Create("TextLabel", {
-        Parent = mainFrame,
-        Size = UDim2.new(1, -40, 0, 40),
+        Parent = warningBox,
+        Size = UDim2.new(1, -40, 0, 50),
         Position = UDim2.new(0, 20, 0, 110),
         BackgroundTransparency = 1,
         Text = message,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        Font = Enum.Font.SourceSans,
+        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular),
         TextWrapped = true
     })
     
-    -- Button Container
     local buttonContainer = Tundra.Create("Frame", {
-        Parent = mainFrame,
+        Parent = warningBox,
         Size = UDim2.new(1, -40, 0, 40),
         Position = UDim2.new(0, 20, 1, -50),
         BackgroundTransparency = 1
     })
     
-    local results = {}
+    pcall(function()
+        screenGui.Parent = game:GetService("CoreGui")
+    end)
     
     if buttons then
         for i, buttonData in ipairs(buttons) do
@@ -1233,16 +1431,16 @@ function Tundra.ShowWarning(title, message, buttons)
                 Text = buttonData.Text,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
                 TextSize = 14,
-                Font = Enum.Font.SourceSansSemibold
+                AutoButtonColor = false
             })
             
-            Tundra.Roundify(button, 6)
+            Tundra.Roundify(button, 8)
             
             button.MouseButton1Click:Connect(function()
                 if buttonData.Callback then
                     buttonData.Callback()
                 end
-                warning:Destroy()
+                screenGui:Destroy()
             end)
         end
     else
@@ -1254,109 +1452,17 @@ function Tundra.ShowWarning(title, message, buttons)
             Text = "OK",
             TextColor3 = Color3.fromRGB(255, 255, 255),
             TextSize = 14,
-            Font = Enum.Font.SourceSansSemibold
+            AutoButtonColor = false
         })
         
-        Tundra.Roundify(okButton, 6)
+        Tundra.Roundify(okButton, 8)
         
         okButton.MouseButton1Click:Connect(function()
-            warning:Destroy()
+            screenGui:Destroy()
         end)
     end
     
-    warning.Parent = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
-    
-    return warning
-end
-
--- ====================
--- NOTIFICATION SYSTEM
--- ====================
-function Tundra.Notify(title, message, duration, notificationType)
-    duration = duration or 5
-    notificationType = notificationType or "Info" -- Info, Success, Warning, Error
-    
-    local colors = {
-        Info = Tundra.Themes[Tundra.CurrentTheme].Primary,
-        Success = Tundra.Themes[Tundra.CurrentTheme].Success,
-        Warning = Tundra.Themes[Tundra.CurrentTheme].Warning,
-        Error = Tundra.Themes[Tundra.CurrentTheme].Danger
-    }
-    
-    local notification = Tundra.Create("ScreenGui", {
-        Name = "TundraNotification",
-        ResetOnSpawn = false,
-        ZIndexBehavior = Enum.ZIndexBehavior.Global
-    })
-    
-    local mainFrame = Tundra.Create("Frame", {
-        Parent = notification,
-        Size = UDim2.new(0, 300, 0, 80),
-        Position = UDim2.new(1, -320, 1, -100),
-        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
-        BorderSizePixel = 0
-    })
-    
-    Tundra.Roundify(mainFrame, 8)
-    Tundra.AddShadow(mainFrame, 0.3)
-    
-    local accent = Tundra.Create("Frame", {
-        Parent = mainFrame,
-        Size = UDim2.new(0, 4, 1, 0),
-        BackgroundColor3 = colors[notificationType],
-        BorderSizePixel = 0
-    })
-    
-    Tundra.Create("UICorner", {
-        Parent = accent,
-        CornerRadius = UDim.new(0, 8)
-    })
-    
-    local titleLabel = Tundra.Create("TextLabel", {
-        Parent = mainFrame,
-        Size = UDim2.new(1, -20, 0, 25),
-        Position = UDim2.new(0, 15, 0, 10),
-        BackgroundTransparency = 1,
-        Text = title,
-        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSansSemibold
-    })
-    
-    local messageLabel = Tundra.Create("TextLabel", {
-        Parent = mainFrame,
-        Size = UDim2.new(1, -20, 0, 35),
-        Position = UDim2.new(0, 15, 0, 35),
-        BackgroundTransparency = 1,
-        Text = message,
-        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.SourceSans,
-        TextWrapped = true
-    })
-    
-    notification.Parent = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
-    
-    -- Slide in animation
-    mainFrame.Position = UDim2.new(1, 300, 1, -100)
-    Tundra.Tween(mainFrame, {
-        Position = UDim2.new(1, -320, 1, -100)
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    
-    -- Auto dismiss
-    task.wait(duration)
-    
-    -- Slide out animation
-    Tundra.Tween(mainFrame, {
-        Position = UDim2.new(1, 300, 1, -100)
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
-    
-    task.wait(0.3)
-    notification:Destroy()
-    
-    return notification
+    return screenGui
 end
 
 -- ====================
@@ -1365,42 +1471,15 @@ end
 function Tundra.SetTheme(themeName)
     if Tundra.Themes[themeName] then
         Tundra.CurrentTheme = themeName
+        Tundra.SaveManager:Set("Theme", themeName)
         return true
     end
     return false
 end
 
-function Tundra.GetCurrentTheme()
-    return Tundra.Themes[Tundra.CurrentTheme]
-end
-
-function Tundra.CreateCustomTheme(name, colors)
-    Tundra.Themes[name] = colors
-    return true
-end
-
--- ====================
--- INITIALIZATION
--- ====================
-function Tundra.Init()
-    -- Load saved theme
-    local savedTheme = Tundra.SaveManager:Get("Theme", "Dark")
-    Tundra.SetTheme(savedTheme)
-    
-    -- Auto-save theme changes
-    local oldTheme = Tundra.CurrentTheme
-    while true do
-        task.wait(1)
-        if Tundra.CurrentTheme ~= oldTheme then
-            Tundra.SaveManager:Set("Theme", Tundra.CurrentTheme)
-            oldTheme = Tundra.CurrentTheme
-        end
-    end
-end
-
--- Auto-initialize if possible
-task.spawn(function()
-    Tundra.Init()
-end)
+-- Initialize
+Tundra.SaveManager:Load()
+local savedTheme = Tundra.SaveManager:Get("Theme", "Dark")
+Tundra.SetTheme(savedTheme)
 
 return Tundra
