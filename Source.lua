@@ -1,6 +1,5 @@
--- Tundra UI Library v2.0
+-- Tundra UI Library v2.0 - FIXED VERSION
 -- Modern macOS-inspired UI with acrylic blur, PFP area, and Fluent design
--- Based on Fluent UI and Maclib principles
 
 local Tundra = {
     Version = "2.0.0",
@@ -23,7 +22,7 @@ local Tundra = {
         sliderbar = "rbxassetid://18772615246",
         sliderhead = "rbxassetid://18772834246",
         
-        -- Lucide Icons (from official website)
+        -- Lucide Icons
         home = "rbxassetid://10709790925",
         sword = "rbxassetid://10709791277",
         eye = "rbxassetid://10709790603",
@@ -288,7 +287,7 @@ function Tundra.CreateWindow(options)
     
     Tundra.Roundify(pfpFrame, 30)
     
-    -- PFP image (using Roblox default avatar)
+    -- PFP image
     local pfpImage = Tundra.Create("ImageLabel", {
         Parent = pfpFrame,
         Size = UDim2.new(1, -4, 1, -4),
@@ -310,7 +309,7 @@ function Tundra.CreateWindow(options)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     local userStatus = Tundra.Create("TextLabel", {
@@ -322,7 +321,7 @@ function Tundra.CreateWindow(options)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+        Font = Enum.Font.Gotham
     })
     
     -- Title area (center)
@@ -340,7 +339,7 @@ function Tundra.CreateWindow(options)
         Text = options.Title or "Tundra UI",
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 24,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
+        Font = Enum.Font.GothamBold
     })
     
     local subtitle = Tundra.Create("TextLabel", {
@@ -351,7 +350,7 @@ function Tundra.CreateWindow(options)
         Text = "v" .. Tundra.Version,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 12,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+        Font = Enum.Font.Gotham
     })
     
     -- Action buttons (right side)
@@ -537,7 +536,7 @@ function Tundra.CreateTab(parent, contentParent, name, icon)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     -- Tab content
@@ -673,7 +672,7 @@ function Tundra.CreateSection(parent, title)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
+        Font = Enum.Font.GothamBold
     })
     
     return {
@@ -724,7 +723,7 @@ function Tundra.CreateButton(parent, text, callback, icon)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     -- Hover effects
@@ -781,7 +780,7 @@ function Tundra.CreateToggle(parent, text, default, callback, risky)
         TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     -- Use Fluent UI style toggle
@@ -877,7 +876,7 @@ function Tundra.CreateSlider(parent, text, min, max, default, callback)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     local valueLabel = Tundra.Create("TextLabel", {
@@ -888,7 +887,7 @@ function Tundra.CreateSlider(parent, text, min, max, default, callback)
         Text = tostring(value),
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+        Font = Enum.Font.Gotham
     })
     
     local sliderTrack = Tundra.Create("Frame", {
@@ -999,7 +998,7 @@ function Tundra.CreateDropdown(parent, text, options, default, callback)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     local dropdownButton = Tundra.Create("TextButton", {
@@ -1138,7 +1137,7 @@ function Tundra.CreateKeybind(parent, text, defaultKey, callback, mode)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     local keyButton = Tundra.Create("TextButton", {
@@ -1203,7 +1202,7 @@ function Tundra.CreateInput(parent, text, placeholder, callback)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        Font = Enum.Font.GothamSemibold
     })
     
     local inputBox = Tundra.Create("TextBox", {
@@ -1251,7 +1250,7 @@ function Tundra.CreateLabel(parent, text)
         TextSize = 14,
         TextWrapped = true,
         LayoutOrder = parent:GetChildren().Size,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+        Font = Enum.Font.Gotham
     })
     
     return {
@@ -1312,7 +1311,7 @@ function Tundra.Notify(title, message, duration, type)
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold)
+        Font = Enum.Font.GothamBold
     })
     
     local messageLabel = Tundra.Create("TextLabel", {
@@ -1325,7 +1324,7 @@ function Tundra.Notify(title, message, duration, type)
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextWrapped = true,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular)
+        Font = Enum.Font.Gotham
     })
     
     -- Parent to CoreGui
@@ -1394,7 +1393,7 @@ function Tundra.ShowWarning(title, message, buttons)
         Text = title,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
         TextSize = 20,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Bold),
+        Font = Enum.Font.GothamBold,
         TextWrapped = true
     })
     
@@ -1406,7 +1405,7 @@ function Tundra.ShowWarning(title, message, buttons)
         Text = message,
         TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
         TextSize = 14,
-        Font = Enum.Font.fromName("Gotham", Enum.FontWeight.Regular),
+        Font = Enum.Font.Gotham,
         TextWrapped = true
     })
     
