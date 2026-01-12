@@ -1,183 +1,319 @@
--- Tundra.win UI Library v2.0
--- Enhanced with mobile support, configs, themes, and more
+-- Tundra UI Library v1.0
+-- Modern, macOS-inspired UI framework for Roblox
+-- Features: Fluent design, theme system, save manager, notifications, keybinds, warnings, risky bools, element locking
 
+local Tundra = {
+    Version = "1.0.0",
+    Name = "Tundra",
+    CurrentTheme = "Dark",
+    LockedElements = {}
+}
+
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
 
-local Tundra = {}
-Tundra.__index = Tundra
-
--- Create Blur Effect for entire screen
-local function CreateScreenBlur()
-    local BlurEffect = Instance.new("BlurEffect")
-    BlurEffect.Name = "TundraBlur"
-    BlurEffect.Size = 10
-    BlurEffect.Parent = game:GetService("Lighting")
-    return BlurEffect
-end
-
--- Icon Library (Lucide Icons via URL)
-local Icons = {
-    Settings = "rbxassetid://11295291707",
-    Home = "rbxassetid://11293981586",
-    User = "rbxassetid://11293977557",
-    Lock = "rbxassetid://11295277671",
-    Unlock = "rbxassetid://11295278077",
-    Eye = "rbxassetid://11293982008",
-    EyeOff = "rbxassetid://11293982008",
-    Check = "rbxassetid://11293981605",
-    X = "rbxassetid://11293981828",
-    Alert = "rbxassetid://11293978029",
-    Shield = "rbxassetid://11293978730",
-    Target = "rbxassetid://11293979869",
-    Menu = "rbxassetid://11293977416",
-    Palette = "rbxassetid://11293978404",
-    Save = "rbxassetid://11293978682",
-    Folder = "rbxassetid://11293982096",
-    Keyboard = "rbxassetid://11293979584",
-}
-
--- Themes
-local Themes = {
+-- ====================
+-- THEME SYSTEM
+-- ====================
+Tundra.Themes = {
     Dark = {
-        Name = "Dark",
-        Background = Color3.fromRGB(20, 20, 25),
-        TopBar = Color3.fromRGB(25, 25, 30),
-        SideBar = Color3.fromRGB(22, 22, 27),
-        Element = Color3.fromRGB(35, 35, 40),
-        ElementHover = Color3.fromRGB(45, 45, 50),
-        Accent = Color3.fromRGB(138, 102, 204),
-        Text = Color3.fromRGB(220, 220, 220),
-        SubText = Color3.fromRGB(160, 160, 160),
-        Border = Color3.fromRGB(40, 40, 45),
-        Success = Color3.fromRGB(40, 201, 64),
-        Warning = Color3.fromRGB(255, 189, 68),
-        Error = Color3.fromRGB(255, 95, 87),
+        Background = Color3.fromRGB(30, 30, 35),
+        SecondaryBackground = Color3.fromRGB(40, 40, 45),
+        TertiaryBackground = Color3.fromRGB(50, 50, 55),
+        
+        Primary = Color3.fromRGB(0, 122, 255),
+        PrimaryHover = Color3.fromRGB(10, 132, 255),
+        PrimaryPressed = Color3.fromRGB(0, 100, 220),
+        
+        Success = Color3.fromRGB(52, 199, 89),
+        Warning = Color3.fromRGB(255, 149, 0),
+        Danger = Color3.fromRGB(255, 59, 48),
+        
+        Text = Color3.fromRGB(255, 255, 255),
+        SubText = Color3.fromRGB(180, 180, 180),
+        DisabledText = Color3.fromRGB(120, 120, 120),
+        
+        Border = Color3.fromRGB(70, 70, 75),
+        Shadow = Color3.fromRGB(0, 0, 0, 0.3),
+        
+        ToggleOn = Color3.fromRGB(52, 199, 89),
+        ToggleOff = Color3.fromRGB(70, 70, 75),
+        
+        Risky = Color3.fromRGB(255, 69, 58),
+        Safe = Color3.fromRGB(52, 199, 89)
     },
-    Ocean = {
-        Name = "Ocean",
-        Background = Color3.fromRGB(15, 25, 35),
-        TopBar = Color3.fromRGB(20, 30, 45),
-        SideBar = Color3.fromRGB(18, 28, 40),
-        Element = Color3.fromRGB(30, 45, 60),
-        ElementHover = Color3.fromRGB(40, 55, 70),
-        Accent = Color3.fromRGB(52, 152, 219),
-        Text = Color3.fromRGB(220, 230, 240),
-        SubText = Color3.fromRGB(150, 170, 190),
-        Border = Color3.fromRGB(35, 50, 65),
-        Success = Color3.fromRGB(46, 204, 113),
-        Warning = Color3.fromRGB(241, 196, 15),
-        Error = Color3.fromRGB(231, 76, 60),
+    
+    Light = {
+        Background = Color3.fromRGB(242, 242, 247),
+        SecondaryBackground = Color3.fromRGB(255, 255, 255),
+        TertiaryBackground = Color3.fromRGB(248, 248, 248),
+        
+        Primary = Color3.fromRGB(0, 122, 255),
+        PrimaryHover = Color3.fromRGB(10, 132, 255),
+        PrimaryPressed = Color3.fromRGB(0, 100, 220),
+        
+        Success = Color3.fromRGB(52, 199, 89),
+        Warning = Color3.fromRGB(255, 149, 0),
+        Danger = Color3.fromRGB(255, 59, 48),
+        
+        Text = Color3.fromRGB(0, 0, 0),
+        SubText = Color3.fromRGB(60, 60, 67),
+        DisabledText = Color3.fromRGB(142, 142, 147),
+        
+        Border = Color3.fromRGB(209, 209, 214),
+        Shadow = Color3.fromRGB(0, 0, 0, 0.1),
+        
+        ToggleOn = Color3.fromRGB(52, 199, 89),
+        ToggleOff = Color3.fromRGB(209, 209, 214),
+        
+        Risky = Color3.fromRGB(255, 69, 58),
+        Safe = Color3.fromRGB(52, 199, 89)
     },
-    Purple = {
-        Name = "Purple",
-        Background = Color3.fromRGB(25, 15, 35),
-        TopBar = Color3.fromRGB(35, 20, 50),
-        SideBar = Color3.fromRGB(30, 18, 45),
-        Element = Color3.fromRGB(45, 30, 65),
-        ElementHover = Color3.fromRGB(55, 40, 75),
-        Accent = Color3.fromRGB(155, 89, 182),
-        Text = Color3.fromRGB(230, 220, 240),
-        SubText = Color3.fromRGB(180, 160, 200),
-        Border = Color3.fromRGB(50, 35, 70),
-        Success = Color3.fromRGB(142, 68, 173),
-        Warning = Color3.fromRGB(230, 126, 34),
-        Error = Color3.fromRGB(192, 57, 43),
-    },
-    Forest = {
-        Name = "Forest",
-        Background = Color3.fromRGB(20, 28, 20),
-        TopBar = Color3.fromRGB(25, 35, 25),
-        SideBar = Color3.fromRGB(22, 32, 22),
-        Element = Color3.fromRGB(35, 50, 35),
-        ElementHover = Color3.fromRGB(45, 60, 45),
-        Accent = Color3.fromRGB(76, 175, 80),
-        Text = Color3.fromRGB(220, 230, 220),
-        SubText = Color3.fromRGB(160, 180, 160),
-        Border = Color3.fromRGB(40, 55, 40),
-        Success = Color3.fromRGB(102, 187, 106),
-        Warning = Color3.fromRGB(255, 193, 7),
-        Error = Color3.fromRGB(239, 83, 80),
-    },
-    Midnight = {
-        Name = "Midnight",
-        Background = Color3.fromRGB(10, 10, 15),
-        TopBar = Color3.fromRGB(15, 15, 22),
-        SideBar = Color3.fromRGB(12, 12, 18),
-        Element = Color3.fromRGB(25, 25, 35),
-        ElementHover = Color3.fromRGB(35, 35, 45),
-        Accent = Color3.fromRGB(100, 100, 220),
-        Text = Color3.fromRGB(230, 230, 240),
-        SubText = Color3.fromRGB(140, 140, 160),
-        Border = Color3.fromRGB(30, 30, 40),
-        Success = Color3.fromRGB(80, 200, 120),
-        Warning = Color3.fromRGB(255, 180, 50),
-        Error = Color3.fromRGB(255, 70, 70),
-    },
+    
+    Dracula = {
+        Background = Color3.fromRGB(40, 42, 54),
+        SecondaryBackground = Color3.fromRGB(68, 71, 90),
+        TertiaryBackground = Color3.fromRGB(50, 52, 64),
+        
+        Primary = Color3.fromRGB(189, 147, 249),
+        PrimaryHover = Color3.fromRGB(199, 157, 255),
+        PrimaryPressed = Color3.fromRGB(179, 137, 239),
+        
+        Success = Color3.fromRGB(80, 250, 123),
+        Warning = Color3.fromRGB(241, 250, 140),
+        Danger = Color3.fromRGB(255, 85, 85),
+        
+        Text = Color3.fromRGB(248, 248, 242),
+        SubText = Color3.fromRGB(139, 233, 253),
+        DisabledText = Color3.fromRGB(98, 114, 164),
+        
+        Border = Color3.fromRGB(68, 71, 90),
+        Shadow = Color3.fromRGB(0, 0, 0, 0.4),
+        
+        ToggleOn = Color3.fromRGB(80, 250, 123),
+        ToggleOff = Color3.fromRGB(68, 71, 90),
+        
+        Risky = Color3.fromRGB(255, 121, 198),
+        Safe = Color3.fromRGB(80, 250, 123)
+    }
 }
 
--- Mobile Detection
-local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-
--- Config System
-local ConfigFolder = "TundraConfigs"
-local function SaveConfig(windowName, config)
-    if not isfolder or not writefile then return end
-    
-    if not isfolder(ConfigFolder) then
-        makefolder(ConfigFolder)
+-- ====================
+-- UTILITY FUNCTIONS
+-- ====================
+function Tundra.Create(class, properties)
+    local obj = Instance.new(class)
+    for property, value in pairs(properties) do
+        obj[property] = value
     end
-    
-    local success, encoded = pcall(function()
-        return HttpService:JSONEncode(config)
-    end)
-    
-    if success then
-        writefile(ConfigFolder .. "/" .. windowName .. ".json", encoded)
-    end
+    return obj
 end
 
-local function LoadConfig(windowName)
-    if not isfile or not readfile then return nil end
-    
-    local path = ConfigFolder .. "/" .. windowName .. ".json"
-    if isfile(path) then
-        local success, decoded = pcall(function()
-            return HttpService:JSONDecode(readfile(path))
-        end)
-        if success then
-            return decoded
-        end
-    end
-    return nil
-end
-
--- Utility Functions
-local function CreateTween(object, properties, duration, style, direction)
+function Tundra.Tween(obj, properties, duration, easingStyle, easingDirection)
     local tweenInfo = TweenInfo.new(
-        duration or 0.3,
-        style or Enum.EasingStyle.Quad,
-        direction or Enum.EasingDirection.Out
+        duration or 0.2,
+        easingStyle or Enum.EasingStyle.Quad,
+        easingDirection or Enum.EasingDirection.Out
     )
-    local tween = TweenService:Create(object, tweenInfo, properties)
+    local tween = TweenService:Create(obj, tweenInfo, properties)
     tween:Play()
     return tween
 end
 
-local function MakeDraggable(frame, dragHandle)
-    local dragging = false
-    local dragInput, mousePos, framePos
+function Tundra.Roundify(obj, cornerRadius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, cornerRadius or 6)
+    corner.Parent = obj
+    return corner
+end
 
-    dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+function Tundra.AddShadow(obj, transparency)
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Image = "rbxassetid://5554236805"
+    shadow.ImageColor3 = Color3.new(0, 0, 0)
+    shadow.ImageTransparency = transparency or 0.5
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(23, 23, 277, 277)
+    shadow.BackgroundTransparency = 1
+    shadow.Size = UDim2.new(1, 14, 1, 14)
+    shadow.Position = UDim2.new(0, -7, 0, -7)
+    shadow.ZIndex = obj.ZIndex - 1
+    shadow.Parent = obj
+    return shadow
+end
+
+-- ====================
+-- ELEMENT LOCKING SYSTEM
+-- ====================
+function Tundra.LockElement(element)
+    Tundra.LockedElements[element] = true
+    if element:IsA("GuiButton") then
+        element.AutoButtonColor = false
+        element.Active = false
+        Tundra.Tween(element, {ImageColor3 = Tundra.Themes[Tundra.CurrentTheme].DisabledText}, 0.2)
+    end
+end
+
+function Tundra.UnlockElement(element)
+    Tundra.LockedElements[element] = nil
+    if element:IsA("GuiButton") then
+        element.AutoButtonColor = true
+        element.Active = true
+        Tundra.Tween(element, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
+    end
+end
+
+function Tundra.IsLocked(element)
+    return Tundra.LockedElements[element] == true
+end
+
+-- ====================
+-- SAVE MANAGER
+-- ====================
+Tundra.SaveManager = {
+    DefaultFileName = "TundraSettings.json",
+    Data = {}
+}
+
+function Tundra.SaveManager:Load(filename)
+    local success, result = pcall(function()
+        if not isfile then return {} end
+        if isfile(filename or self.DefaultFileName) then
+            local data = readfile(filename or self.DefaultFileName)
+            return HttpService:JSONDecode(data)
+        end
+        return {}
+    end)
+    
+    if success then
+        self.Data = result
+        return result
+    else
+        warn("[Tundra] Failed to load settings:", result)
+        return {}
+    end
+end
+
+function Tundra.SaveManager:Save(filename)
+    local success, result = pcall(function()
+        if not writefile then return false end
+        local json = HttpService:JSONEncode(self.Data)
+        writefile(filename or self.DefaultFileName, json)
+        return true
+    end)
+    
+    if not success then
+        warn("[Tundra] Failed to save settings:", result)
+    end
+    return success
+end
+
+function Tundra.SaveManager:Set(key, value)
+    self.Data[key] = value
+    self:Save()
+end
+
+function Tundra.SaveManager:Get(key, default)
+    return self.Data[key] or default
+end
+
+-- ====================
+-- WINDOW SYSTEM
+-- ====================
+function Tundra.CreateWindow(options)
+    options = options or {}
+    
+    local window = Tundra.Create("ScreenGui", {
+        Name = options.Name or "TundraWindow",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Global
+    })
+    
+    local mainFrame = Tundra.Create("Frame", {
+        Parent = window,
+        Size = UDim2.new(0, options.Width or 500, 0, options.Height or 400),
+        Position = UDim2.new(0.5, -((options.Width or 500)/2), 0.5, -((options.Height or 400)/2)),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(mainFrame, 12)
+    Tundra.AddShadow(mainFrame, 0.3)
+    
+    -- Title Bar
+    local titleBar = Tundra.Create("Frame", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Create("UICorner", {
+        Parent = titleBar,
+        CornerRadius = UDim.new(0, 12)
+    })
+    
+    local title = Tundra.Create("TextLabel", {
+        Parent = titleBar,
+        Size = UDim2.new(1, -80, 1, 0),
+        Position = UDim2.new(0, 15, 0, 0),
+        BackgroundTransparency = 1,
+        Text = options.Title or "Tundra Window",
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    -- Close Button
+    local closeButton = Tundra.Create("TextButton", {
+        Parent = titleBar,
+        Size = UDim2.new(0, 30, 0, 30),
+        Position = UDim2.new(1, -35, 0.5, -15),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Danger,
+        Text = "×",
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 20,
+        Font = Enum.Font.SourceSansBold
+    })
+    
+    Tundra.Roundify(closeButton, 8)
+    
+    closeButton.MouseButton1Click:Connect(function()
+        Tundra.Tween(window, {Size = UDim2.new(0, 0, 0, 0)}, 0.2):Play()
+        task.wait(0.2)
+        window:Destroy()
+    end)
+    
+    -- Content Area
+    local content = Tundra.Create("Frame", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, 0, 1, -40),
+        Position = UDim2.new(0, 0, 0, 40),
+        BackgroundTransparency = 1
+    })
+    
+    -- Dragging
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
-            mousePos = input.Position
-            framePos = frame.Position
-
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -185,1624 +321,1086 @@ local function MakeDraggable(frame, dragHandle)
             end)
         end
     end)
-
-    dragHandle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    
+    titleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
             dragInput = input
         end
     end)
-
+    
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
-            local delta = input.Position - mousePos
-            CreateTween(frame, {
-                Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
-            }, 0.15)
+            update(input)
         end
     end)
-end
-
-local function RGBToHSV(r, g, b)
-    r, g, b = r / 255, g / 255, b / 255
-    local max, min = math.max(r, g, b), math.min(r, g, b)
-    local h, s, v = 0, 0, max
-    local d = max - min
-    s = max == 0 and 0 or d / max
-
-    if max == min then
-        h = 0
-    else
-        if max == r then
-            h = (g - b) / d + (g < b and 6 or 0)
-        elseif max == g then
-            h = (b - r) / d + 2
-        elseif max == b then
-            h = (r - g) / d + 4
-        end
-        h = h / 6
-    end
-
-    return h, s, v
-end
-
-local function HSVToRGB(h, s, v)
-    local r, g, b
-    local i = math.floor(h * 6)
-    local f = h * 6 - i
-    local p = v * (1 - s)
-    local q = v * (1 - f * s)
-    local t = v * (1 - (1 - f) * s)
-    i = i % 6
-
-    if i == 0 then r, g, b = v, t, p
-    elseif i == 1 then r, g, b = q, v, p
-    elseif i == 2 then r, g, b = p, v, t
-    elseif i == 3 then r, g, b = p, q, v
-    elseif i == 4 then r, g, b = t, p, v
-    elseif i == 5 then r, g, b = v, p, q
-    end
-
-    return Color3.new(r, g, b)
-end
-
--- Main Library Functions
-function Tundra:CreateWindow(config)
-    local window = {}
     
-    config = config or {}
-    local title = config.Title or "Tundra.win"
-    local subtitle = config.Subtitle or "by Creator"
-    local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
-    local theme = config.Theme or "Dark"
-    local tabMode = config.TabMode or "Horizontal" -- "Horizontal" or "Vertical"
-    local size = config.Size or (isMobile and UDim2.new(0, 380, 0, 600) or UDim2.new(0, 680, 0, 520))
-    
-    window.currentTheme = Themes[theme] or Themes.Dark
-    window.tabMode = tabMode
-    window.config = {
+    return {
+        Window = window,
+        Frame = mainFrame,
+        Content = content,
         Title = title,
-        Subtitle = subtitle,
-        ToggleKey = toggleKey,
-        Theme = theme,
-        TabMode = tabMode,
-        Elements = {}
+        Close = closeButton,
+        
+        AddTab = function(self, tabName, icon)
+            return Tundra.CreateTab(self.Content, tabName, icon)
+        end
+    }
+end
+
+-- ====================
+-- TAB SYSTEM
+-- ====================
+function Tundra.CreateTab(parent, tabName, icon)
+    local tabButton = Tundra.Create("TextButton", {
+        Parent = parent,
+        Size = UDim2.new(0, 120, 0, 35),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Text = tabName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    Tundra.Roundify(tabButton, 6)
+    
+    local tabContent = Tundra.Create("ScrollingFrame", {
+        Parent = parent,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Border,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        Visible = false
+    })
+    
+    local listLayout = Tundra.Create("UIListLayout", {
+        Parent = tabContent,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 8)
+    })
+    
+    local padding = Tundra.Create("UIPadding", {
+        Parent = tabContent,
+        PaddingLeft = UDim.new(0, 10),
+        PaddingTop = UDim.new(0, 10)
+    })
+    
+    tabButton.MouseButton1Click:Connect(function()
+        -- Hide all tab contents
+        for _, child in ipairs(parent:GetChildren()) do
+            if child:IsA("ScrollingFrame") and child.Name == "TabContent" then
+                child.Visible = false
+            end
+        end
+        
+        -- Show this tab's content
+        tabContent.Visible = true
+        
+        -- Update button appearance
+        Tundra.Tween(tabButton, {
+            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary
+        }, 0.2)
+    end)
+    
+    return {
+        Button = tabButton,
+        Content = tabContent,
+        
+        AddSection = function(self, sectionName)
+            return Tundra.CreateSection(self.Content, sectionName)
+        end,
+        
+        AddButton = function(self, buttonName, callback)
+            return Tundra.CreateButton(self.Content, buttonName, callback)
+        end,
+        
+        AddToggle = function(self, toggleName, defaultValue, callback, risky)
+            return Tundra.CreateToggle(self.Content, toggleName, defaultValue, callback, risky)
+        end,
+        
+        AddSlider = function(self, sliderName, minValue, maxValue, defaultValue, callback)
+            return Tundra.CreateSlider(self.Content, sliderName, minValue, maxValue, defaultValue, callback)
+        end,
+        
+        AddDropdown = function(self, dropdownName, options, defaultOption, callback)
+            return Tundra.CreateDropdown(self.Content, dropdownName, options, defaultOption, callback)
+        end,
+        
+        AddKeybind = function(self, keybindName, defaultKey, callback, mode)
+            return Tundra.CreateKeybind(self.Content, keybindName, defaultKey, callback, mode)
+        end,
+        
+        AddInput = function(self, inputName, placeholder, callback)
+            return Tundra.CreateInput(self.Content, inputName, placeholder, callback)
+        end,
+        
+        AddLabel = function(self, labelText)
+            return Tundra.CreateLabel(self.Content, labelText)
+        end
+    }
+end
+
+-- ====================
+-- SECTION
+-- ====================
+function Tundra.CreateSection(parent, sectionName)
+    local section = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 40),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].TertiaryBackground,
+        LayoutOrder = parent:GetChildren().Size
+    })
+    
+    Tundra.Roundify(section, 8)
+    
+    local label = Tundra.Create("TextLabel", {
+        Parent = section,
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        BackgroundTransparency = 1,
+        Text = sectionName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    return {
+        Frame = section,
+        Label = label
+    }
+end
+
+-- ====================
+-- BUTTON
+-- ====================
+function Tundra.CreateButton(parent, buttonName, callback)
+    local button = Tundra.Create("TextButton", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 35),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary,
+        Text = buttonName,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 14,
+        Font = Enum.Font.SourceSansSemibold,
+        LayoutOrder = parent:GetChildren().Size,
+        AutoButtonColor = false
+    })
+    
+    Tundra.Roundify(button, 6)
+    
+    local originalColor = button.BackgroundColor3
+    local hoverColor = Tundra.Themes[Tundra.CurrentTheme].PrimaryHover
+    local pressedColor = Tundra.Themes[Tundra.CurrentTheme].PrimaryPressed
+    
+    button.MouseEnter:Connect(function()
+        if not Tundra.IsLocked(button) then
+            Tundra.Tween(button, {BackgroundColor3 = hoverColor}, 0.2)
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if not Tundra.IsLocked(button) then
+            Tundra.Tween(button, {BackgroundColor3 = originalColor}, 0.2)
+        end
+    end)
+    
+    button.MouseButton1Down:Connect(function()
+        if not Tundra.IsLocked(button) then
+            Tundra.Tween(button, {BackgroundColor3 = pressedColor}, 0.1)
+        end
+    end)
+    
+    button.MouseButton1Up:Connect(function()
+        if not Tundra.IsLocked(button) then
+            Tundra.Tween(button, {BackgroundColor3 = hoverColor}, 0.1)
+            if callback then
+                callback()
+            end
+        end
+    end)
+    
+    return {
+        Button = button,
+        Lock = function()
+            Tundra.LockElement(button)
+        end,
+        Unlock = function()
+            Tundra.UnlockElement(button)
+        end,
+        SetText = function(text)
+            button.Text = text
+        end,
+        SetCallback = function(newCallback)
+            callback = newCallback
+        end
+    }
+end
+
+-- ====================
+-- TOGGLE (WITH RISKY BOOL)
+-- ====================
+function Tundra.CreateToggle(parent, toggleName, defaultValue, callback, risky)
+    local toggle = {
+        Value = defaultValue or false,
+        Risky = risky or false
     }
     
-    -- Create screen blur effect
-    local ScreenBlur = CreateScreenBlur()
+    local container = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 35),
+        BackgroundTransparency = 1,
+        LayoutOrder = parent:GetChildren().Size
+    })
     
-    -- Main ScreenGui
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "TundraUI"
-    ScreenGui.Parent = CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.ResetOnSpawn = false
+    local label = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(1, -50, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = toggleName,
+        TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
     
-    -- Main Frame
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = size
-    MainFrame.Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
-    MainFrame.BackgroundColor3 = window.currentTheme.Background
-    MainFrame.BackgroundTransparency = 0.15
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
-    MainFrame.ClipsDescendants = false
+    local toggleFrame = Tundra.Create("Frame", {
+        Parent = container,
+        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -40, 0.5, -10),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff,
+        BorderSizePixel = 0
+    })
     
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 12)
-    MainCorner.Parent = MainFrame
+    Tundra.Roundify(toggleFrame, 10)
     
-    local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = window.currentTheme.Border
-    MainStroke.Thickness = 1
-    MainStroke.Transparency = 0.7
-    MainStroke.Parent = MainFrame
+    local toggleCircle = Tundra.Create("Frame", {
+        Parent = toggleFrame,
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, 2, 0.5, -8),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0
+    })
     
-    -- Glass/Acrylic effect overlay
-    local GlassEffect = Instance.new("Frame")
-    GlassEffect.Name = "GlassEffect"
-    GlassEffect.Size = UDim2.new(1, 0, 1, 0)
-    GlassEffect.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    GlassEffect.BackgroundTransparency = 0.98
-    GlassEffect.BorderSizePixel = 0
-    GlassEffect.Parent = MainFrame
-    GlassEffect.ZIndex = 0
+    Tundra.Roundify(toggleCircle, 8)
     
-    local GlassCorner = Instance.new("UICorner")
-    GlassCorner.CornerRadius = UDim.new(0, 12)
-    GlassCorner.Parent = GlassEffect
-    
-    -- Noise texture for acrylic effect
-    local NoiseTexture = Instance.new("ImageLabel")
-    NoiseTexture.Name = "NoiseTexture"
-    NoiseTexture.Size = UDim2.new(1, 0, 1, 0)
-    NoiseTexture.BackgroundTransparency = 1
-    NoiseTexture.Image = "rbxassetid://5158447980"
-    NoiseTexture.ImageTransparency = 0.97
-    NoiseTexture.ScaleType = Enum.ScaleType.Tile
-    NoiseTexture.TileSize = UDim2.new(0, 100, 0, 100)
-    NoiseTexture.Parent = MainFrame
-    NoiseTexture.ZIndex = 1
-    
-    local NoiseCorner = Instance.new("UICorner")
-    NoiseCorner.CornerRadius = UDim.new(0, 12)
-    NoiseCorner.Parent = NoiseTexture
-    
-    -- Top Bar
-    local TopBar = Instance.new("Frame")
-    TopBar.Name = "TopBar"
-    TopBar.Size = UDim2.new(1, 0, 0, 50)
-    TopBar.BackgroundColor3 = window.currentTheme.TopBar
-    TopBar.BackgroundTransparency = 0.15
-    TopBar.BorderSizePixel = 0
-    TopBar.Parent = MainFrame
-    TopBar.ZIndex = 2
-    
-    local TopBarCorner = Instance.new("UICorner")
-    TopBarCorner.CornerRadius = UDim.new(0, 12)
-    TopBarCorner.Parent = TopBar
-    
-    local TopBarStroke = Instance.new("UIStroke")
-    TopBarStroke.Color = window.currentTheme.Border
-    TopBarStroke.Thickness = 1
-    TopBarStroke.Transparency = 0.8
-    TopBarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    TopBarStroke.Parent = TopBar
-    
-    local CornerFix = Instance.new("Frame")
-    CornerFix.Size = UDim2.new(1, 0, 0, 12)
-    CornerFix.Position = UDim2.new(0, 0, 1, -12)
-    CornerFix.BackgroundColor3 = window.currentTheme.TopBar
-    CornerFix.BackgroundTransparency = 0.15
-    CornerFix.BorderSizePixel = 0
-    CornerFix.Parent = TopBar
-    CornerFix.ZIndex = 2
-    
-    -- Title with Icon and Subtitle
-    local TitleContainer = Instance.new("Frame")
-    TitleContainer.Size = UDim2.new(0, 250, 1, 0)
-    TitleContainer.Position = UDim2.new(0, 15, 0, 0)
-    TitleContainer.BackgroundTransparency = 1
-    TitleContainer.Parent = TopBar
-    TitleContainer.ZIndex = 3
-    
-    local TitleIcon = Instance.new("ImageLabel")
-    TitleIcon.Size = UDim2.new(0, 22, 0, 22)
-    TitleIcon.Position = UDim2.new(0, 0, 0.5, -11)
-    TitleIcon.BackgroundTransparency = 1
-    TitleIcon.Image = Icons.Menu
-    TitleIcon.ImageColor3 = window.currentTheme.Accent
-    TitleIcon.Parent = TitleContainer
-    TitleIcon.ZIndex = 3
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -30, 0, 22)
-    TitleLabel.Position = UDim2.new(0, 30, 0, 5)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = title
-    TitleLabel.TextColor3 = window.currentTheme.Text
-    TitleLabel.TextSize = 15
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Parent = TitleContainer
-    TitleLabel.ZIndex = 3
-    
-    local SubtitleLabel = Instance.new("TextLabel")
-    SubtitleLabel.Size = UDim2.new(1, -30, 0, 16)
-    SubtitleLabel.Position = UDim2.new(0, 30, 0, 24)
-    SubtitleLabel.BackgroundTransparency = 1
-    SubtitleLabel.Text = subtitle
-    SubtitleLabel.TextColor3 = window.currentTheme.SubText
-    SubtitleLabel.TextSize = 11
-    SubtitleLabel.Font = Enum.Font.Gotham
-    SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    SubtitleLabel.Parent = TitleContainer
-    SubtitleLabel.ZIndex = 3
-    
-    -- Mac Buttons
-    local MacButtons = Instance.new("Frame")
-    MacButtons.Name = "MacButtons"
-    MacButtons.Size = UDim2.new(0, 70, 0, 20)
-    MacButtons.Position = UDim2.new(1, -85, 0.5, -10)
-    MacButtons.BackgroundTransparency = 1
-    MacButtons.Parent = TopBar
-    MacButtons.ZIndex = 3
-    
-    local function CreateMacButton(name, color, position, callback)
-        local Button = Instance.new("Frame")
-        Button.Name = name
-        Button.Size = UDim2.new(0, 14, 0, 14)
-        Button.Position = position
-        Button.BackgroundColor3 = color
-        Button.BorderSizePixel = 0
-        Button.Parent = MacButtons
-        Button.ZIndex = 3
-        
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(1, 0)
-        Corner.Parent = Button
-        
-        local ButtonInput = Instance.new("TextButton")
-        ButtonInput.Size = UDim2.new(1, 0, 1, 0)
-        ButtonInput.BackgroundTransparency = 1
-        ButtonInput.Text = ""
-        ButtonInput.Parent = Button
-        ButtonInput.ZIndex = 4
-        
-        ButtonInput.MouseEnter:Connect(function()
-            CreateTween(Button, {Size = UDim2.new(0, 16, 0, 16)}, 0.15)
-        end)
-        
-        ButtonInput.MouseLeave:Connect(function()
-            CreateTween(Button, {Size = UDim2.new(0, 14, 0, 14)}, 0.15)
-        end)
-        
-        ButtonInput.MouseButton1Click:Connect(callback)
-        
-        return Button
+    local function updateToggle()
+        if toggle.Value then
+            Tundra.Tween(toggleFrame, {
+                BackgroundColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].ToggleOn
+            }, 0.2)
+            Tundra.Tween(toggleCircle, {
+                Position = UDim2.new(1, -18, 0.5, -8)
+            }, 0.2)
+        else
+            Tundra.Tween(toggleFrame, {
+                BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff
+            }, 0.2)
+            Tundra.Tween(toggleCircle, {
+                Position = UDim2.new(0, 2, 0.5, -8)
+            }, 0.2)
+        end
     end
     
-    CreateMacButton("Close", window.currentTheme.Error, UDim2.new(0, 0, 0.5, -7), function()
-        CreateTween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3, Enum.EasingStyle.Back)
-        wait(0.3)
-        ScreenBlur:Destroy()
-        ScreenGui:Destroy()
-    end)
-    
-    local minimized = false
-    CreateMacButton("Minimize", window.currentTheme.Warning, UDim2.new(0, 24, 0.5, -7), function()
-        minimized = not minimized
-        if minimized then
-            CreateTween(MainFrame, {Size = UDim2.new(size.X.Scale, size.X.Offset, 0, 45)}, 0.3, Enum.EasingStyle.Quad)
-        else
-            CreateTween(MainFrame, {Size = size}, 0.3, Enum.EasingStyle.Quad)
+    toggleFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not Tundra.IsLocked(toggleFrame) then
+                toggle.Value = not toggle.Value
+                updateToggle()
+                if callback then
+                    callback(toggle.Value)
+                end
+            end
         end
     end)
     
-    CreateMacButton("Maximize", window.currentTheme.Success, UDim2.new(0, 48, 0.5, -7), function()
-        -- Placeholder for maximize functionality
-    end)
+    updateToggle()
     
-    -- Tab Container (Horizontal or Vertical based on mode)
-    local TabBar = Instance.new("Frame")
-    TabBar.Name = "TabBar"
-    TabBar.BackgroundColor3 = window.currentTheme.SideBar
-    TabBar.BackgroundTransparency = 0.15
-    TabBar.BorderSizePixel = 0
-    TabBar.Parent = MainFrame
-    TabBar.ZIndex = 1
+    return {
+        Frame = container,
+        Label = label,
+        Toggle = toggleFrame,
+        
+        GetValue = function()
+            return toggle.Value
+        end,
+        
+        SetValue = function(value, triggerCallback)
+            toggle.Value = value
+            updateToggle()
+            if triggerCallback and callback then
+                callback(toggle.Value)
+            end
+        end,
+        
+        Toggle = function()
+            toggle.Value = not toggle.Value
+            updateToggle()
+            if callback then
+                callback(toggle.Value)
+            end
+        end,
+        
+        Lock = function()
+            Tundra.LockElement(toggleFrame)
+        end,
+        
+        Unlock = function()
+            Tundra.UnlockElement(toggleFrame)
+        end,
+        
+        SetRisky = function(isRisky)
+            risky = isRisky
+            label.TextColor3 = risky and Tundra.Themes[Tundra.CurrentTheme].Risky or Tundra.Themes[Tundra.CurrentTheme].Text
+            updateToggle()
+        end
+    }
+end
+
+-- ====================
+-- SLIDER
+-- ====================
+function Tundra.CreateSlider(parent, sliderName, minValue, maxValue, defaultValue, callback)
+    local slider = {
+        Value = defaultValue or minValue,
+        Min = minValue or 0,
+        Max = maxValue or 100,
+        Dragging = false
+    }
     
-    if tabMode == "Horizontal" then
-        TabBar.Size = UDim2.new(1, -20, 0, 45)
-        TabBar.Position = UDim2.new(0, 10, 0, 60)
-    else
-        TabBar.Size = UDim2.new(0, 160, 1, -125)
-        TabBar.Position = UDim2.new(0, 10, 0, 60)
+    local container = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 60),
+        BackgroundTransparency = 1,
+        LayoutOrder = parent:GetChildren().Size
+    })
+    
+    local label = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = sliderName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    local valueLabel = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -40, 0, 0),
+        BackgroundTransparency = 1,
+        Text = tostring(defaultValue or minValue),
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        Font = Enum.Font.SourceSans
+    })
+    
+    local track = Tundra.Create("Frame", {
+        Parent = container,
+        Size = UDim2.new(1, 0, 0, 6),
+        Position = UDim2.new(0, 0, 1, -16),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].ToggleOff,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(track, 3)
+    
+    local fill = Tundra.Create("Frame", {
+        Parent = track,
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(fill, 3)
+    
+    local thumb = Tundra.Create("Frame", {
+        Parent = track,
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, -8, 0.5, -8),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(thumb, 8)
+    Tundra.AddShadow(thumb, 0.3)
+    
+    local function updateSlider(value)
+        slider.Value = math.clamp(value, slider.Min, slider.Max)
+        local percentage = (slider.Value - slider.Min) / (slider.Max - slider.Min)
+        
+        fill.Size = UDim2.new(percentage, 0, 1, 0)
+        thumb.Position = UDim2.new(percentage, -8, 0.5, -8)
+        valueLabel.Text = string.format("%.1f", slider.Value)
+        
+        if callback then
+            callback(slider.Value)
+        end
     end
     
-    local TabBarCorner = Instance.new("UICorner")
-    TabBarCorner.CornerRadius = UDim.new(0, 8)
-    TabBarCorner.Parent = TabBar
-    
-    local TabBarStroke = Instance.new("UIStroke")
-    TabBarStroke.Color = window.currentTheme.Border
-    TabBarStroke.Thickness = 1
-    TabBarStroke.Transparency = 0.8
-    TabBarStroke.Parent = TabBar
-    
-    local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.BackgroundTransparency = 1
-    TabContainer.BorderSizePixel = 0
-    TabContainer.ScrollBarThickness = 4
-    TabContainer.ScrollBarImageColor3 = window.currentTheme.Accent
-    TabContainer.Parent = TabBar
-    TabContainer.ZIndex = 2
-    
-    if tabMode == "Horizontal" then
-        TabContainer.Size = UDim2.new(1, -10, 1, 0)
-        TabContainer.Position = UDim2.new(0, 5, 0, 0)
-        TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
-    else
-        TabContainer.Size = UDim2.new(1, -10, 1, -10)
-        TabContainer.Position = UDim2.new(0, 5, 0, 5)
-        TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+    local function onInputChanged(input)
+        if slider.Dragging then
+            local mousePos = UserInputService:GetMouseLocation()
+            local trackPos = track.AbsolutePosition
+            local trackSize = track.AbsoluteSize
+            
+            local relativeX = math.clamp((mousePos.X - trackPos.X) / trackSize.X, 0, 1)
+            local value = slider.Min + (relativeX * (slider.Max - slider.Min))
+            updateSlider(value)
+        end
     end
     
-    -- Add padding to horizontal tab container
-    if tabMode == "Horizontal" then
-        local TabPadding = Instance.new("UIPadding")
-        TabPadding.PaddingTop = UDim.new(0, 5)
-        TabPadding.PaddingBottom = UDim.new(0, 5)
-        TabPadding.PaddingLeft = UDim.new(0, 5)
-        TabPadding.PaddingRight = UDim.new(0, 5)
-        TabPadding.Parent = TabContainer
-    end
-    
-    local TabList = Instance.new("UIListLayout")
-    TabList.SortOrder = Enum.SortOrder.LayoutOrder
-    TabList.Parent = TabContainer
-    
-    if tabMode == "Horizontal" then
-        TabList.FillDirection = Enum.FillDirection.Horizontal
-        TabList.Padding = UDim.new(0, 6)
-        TabList.VerticalAlignment = Enum.VerticalAlignment.Center
-    else
-        TabList.FillDirection = Enum.FillDirection.Vertical
-        TabList.Padding = UDim.new(0, 8)
-    end
-    
-    TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        if tabMode == "Horizontal" then
-            TabContainer.CanvasSize = UDim2.new(0, TabList.AbsoluteContentSize.X + 10, 0, 0)
-        else
-            TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 10)
+    track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not Tundra.IsLocked(track) then
+                slider.Dragging = true
+                onInputChanged(input)
+            end
         end
     end)
     
-    -- Content Container
-    local ContentContainer = Instance.new("Frame")
-    ContentContainer.Name = "ContentContainer"
-    ContentContainer.BackgroundTransparency = 1
-    ContentContainer.Parent = MainFrame
-    ContentContainer.ZIndex = 1
+    track.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            slider.Dragging = false
+        end
+    end)
     
-    if tabMode == "Horizontal" then
-        ContentContainer.Size = UDim2.new(1, -20, 1, -185)
-        ContentContainer.Position = UDim2.new(0, 10, 0, 115)
-    else
-        ContentContainer.Size = UDim2.new(1, -190, 1, -140)
-        ContentContainer.Position = UDim2.new(0, 180, 0, 70)
+    UserInputService.InputChanged:Connect(onInputChanged)
+    
+    updateSlider(defaultValue or minValue)
+    
+    return {
+        Frame = container,
+        GetValue = function()
+            return slider.Value
+        end,
+        SetValue = function(value)
+            updateSlider(value)
+        end,
+        Lock = function()
+            Tundra.LockElement(track)
+        end,
+        Unlock = function()
+            Tundra.UnlockElement(track)
+        end
+    }
+end
+
+-- ====================
+-- DROPDOWN
+-- ====================
+function Tundra.CreateDropdown(parent, dropdownName, options, defaultOption, callback)
+    local dropdown = {
+        Value = defaultOption or options[1],
+        Options = options,
+        Open = false
+    }
+    
+    local container = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 35),
+        BackgroundTransparency = 1,
+        LayoutOrder = parent:GetChildren().Size
+    })
+    
+    local label = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(0, 100, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = dropdownName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    local button = Tundra.Create("TextButton", {
+        Parent = container,
+        Size = UDim2.new(1, -100, 1, 0),
+        Position = UDim2.new(0, 100, 0, 0),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Text = dropdown.Value,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        Font = Enum.Font.SourceSans
+    })
+    
+    Tundra.Roundify(button, 6)
+    
+    local dropdownFrame = Tundra.Create("ScrollingFrame", {
+        Parent = container,
+        Size = UDim2.new(1, -100, 0, 0),
+        Position = UDim2.new(0, 100, 1, 5),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Tundra.Themes[Tundra.CurrentTheme].Border,
+        BorderSizePixel = 0,
+        Visible = false,
+        ZIndex = 10
+    })
+    
+    Tundra.Roundify(dropdownFrame, 6)
+    Tundra.AddShadow(dropdownFrame, 0.3)
+    
+    local listLayout = Tundra.Create("UIListLayout", {
+        Parent = dropdownFrame,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    local function toggleDropdown()
+        if Tundra.IsLocked(button) then return end
+        
+        dropdown.Open = not dropdown.Open
+        if dropdown.Open then
+            Tundra.Tween(dropdownFrame, {
+                Size = UDim2.new(1, -100, 0, math.min(#options * 30, 150))
+            }, 0.2)
+            dropdownFrame.Visible = true
+        else
+            Tundra.Tween(dropdownFrame, {
+                Size = UDim2.new(1, -100, 0, 0)
+            }, 0.2):Play()
+            task.wait(0.2)
+            dropdownFrame.Visible = false
+        end
     end
     
-    -- User Profile Section at bottom
-    local LocalPlayer = Players.LocalPlayer
-    local ProfileSection = Instance.new("Frame")
-    ProfileSection.Name = "ProfileSection"
-    ProfileSection.BackgroundColor3 = window.currentTheme.Element
-    ProfileSection.BackgroundTransparency = 0.15
-    ProfileSection.BorderSizePixel = 0
-    ProfileSection.Parent = MainFrame
-    ProfileSection.ZIndex = 1
+    button.MouseButton1Click:Connect(toggleDropdown)
     
-    if tabMode == "Horizontal" then
-        ProfileSection.Size = UDim2.new(0, 160, 0, 60)
-        ProfileSection.Position = UDim2.new(0, 10, 1, -70)
-    else
-        ProfileSection.Size = UDim2.new(0, 160, 0, 60)
-        ProfileSection.Position = UDim2.new(0, 10, 1, -70)
-    end
-    
-    local ProfileCorner = Instance.new("UICorner")
-    ProfileCorner.CornerRadius = UDim.new(0, 8)
-    ProfileCorner.Parent = ProfileSection
-    
-    local ProfileStroke = Instance.new("UIStroke")
-    ProfileStroke.Color = window.currentTheme.Border
-    ProfileStroke.Thickness = 1
-    ProfileStroke.Transparency = 0.8
-    ProfileStroke.Parent = ProfileSection
-    
-    -- User Avatar
-    local UserAvatar = Instance.new("ImageLabel")
-    UserAvatar.Size = UDim2.new(0, 40, 0, 40)
-    UserAvatar.Position = UDim2.new(0, 10, 0.5, -20)
-    UserAvatar.BackgroundColor3 = window.currentTheme.Background
-    UserAvatar.BackgroundTransparency = 0.15
-    UserAvatar.BorderSizePixel = 0
-    UserAvatar.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-    UserAvatar.Parent = ProfileSection
-    UserAvatar.ZIndex = 2
-    
-    local AvatarCorner = Instance.new("UICorner")
-    AvatarCorner.CornerRadius = UDim.new(0, 8)
-    AvatarCorner.Parent = UserAvatar
-    
-    local AvatarStroke = Instance.new("UIStroke")
-    AvatarStroke.Color = window.currentTheme.Accent
-    AvatarStroke.Thickness = 2
-    AvatarStroke.Transparency = 0.5
-    AvatarStroke.Parent = UserAvatar
-    
-    -- Username
-    local Username = Instance.new("TextLabel")
-    Username.Size = UDim2.new(0, 95, 0, 18)
-    Username.Position = UDim2.new(0, 55, 0, 12)
-    Username.BackgroundTransparency = 1
-    Username.Text = "@" .. LocalPlayer.Name
-    Username.TextColor3 = window.currentTheme.Text
-    Username.TextSize = 12
-    Username.Font = Enum.Font.GothamBold
-    Username.TextXAlignment = Enum.TextXAlignment.Left
-    Username.TextTruncate = Enum.TextTruncate.AtEnd
-    Username.Parent = ProfileSection
-    Username.ZIndex = 2
-    
-    -- Display Name
-    local DisplayName = Instance.new("TextLabel")
-    DisplayName.Size = UDim2.new(0, 95, 0, 16)
-    DisplayName.Position = UDim2.new(0, 55, 0, 30)
-    DisplayName.BackgroundTransparency = 1
-    DisplayName.Text = LocalPlayer.DisplayName
-    DisplayName.TextColor3 = window.currentTheme.SubText
-    DisplayName.TextSize = 10
-    DisplayName.Font = Enum.Font.Gotham
-    DisplayName.TextXAlignment = Enum.TextXAlignment.Left
-    DisplayName.TextTruncate = Enum.TextTruncate.AtEnd
-    DisplayName.Parent = ProfileSection
-    DisplayName.ZIndex = 2
-    
-    -- Tab Mode Toggle Button
-    local TabModeToggle = Instance.new("TextButton")
-    TabModeToggle.Name = "TabModeToggle"
-    TabModeToggle.Size = UDim2.new(0, 35, 0, 35)
-    TabModeToggle.Position = UDim2.new(1, -45, 0.5, -17.5)
-    TabModeToggle.BackgroundColor3 = window.currentTheme.Element
-    TabModeToggle.BackgroundTransparency = 0.15
-    TabModeToggle.BorderSizePixel = 0
-    TabModeToggle.Text = ""
-    TabModeToggle.Parent = TopBar
-    TabModeToggle.ZIndex = 3
-    
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 8)
-    ToggleCorner.Parent = TabModeToggle
-    
-    local ToggleStroke = Instance.new("UIStroke")
-    ToggleStroke.Color = window.currentTheme.Border
-    ToggleStroke.Thickness = 1
-    ToggleStroke.Transparency = 0.8
-    ToggleStroke.Parent = TabModeToggle
-    
-    local ToggleIcon = Instance.new("ImageLabel")
-    ToggleIcon.Size = UDim2.new(0, 20, 0, 20)
-    ToggleIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
-    ToggleIcon.BackgroundTransparency = 1
-    ToggleIcon.Image = tabMode == "Horizontal" and Icons.Menu or Icons.Menu
-    ToggleIcon.ImageColor3 = window.currentTheme.Accent
-    ToggleIcon.Parent = TabModeToggle
-    ToggleIcon.ZIndex = 4
-    
-    TabModeToggle.MouseButton1Click:Connect(function()
-        window.tabMode = window.tabMode == "Horizontal" and "Vertical" or "Horizontal"
-        window.config.TabMode = window.tabMode
-        
-        -- Recreate the UI with new tab mode
-        ScreenBlur:Destroy()
-        ScreenGui:Destroy()
-        
-        local newWindow = Tundra:CreateWindow({
-            Title = window.config.Title,
-            Subtitle = window.config.Subtitle,
-            ToggleKey = window.config.ToggleKey,
-            Theme = window.config.Theme,
-            TabMode = window.tabMode,
-            Size = size
+    for _, option in ipairs(options) do
+        local optionButton = Tundra.Create("TextButton", {
+            Parent = dropdownFrame,
+            Size = UDim2.new(1, -10, 0, 30),
+            Position = UDim2.new(0, 5, 0, 0),
+            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+            Text = option,
+            TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+            TextSize = 14,
+            Font = Enum.Font.SourceSans,
+            LayoutOrder = _
         })
         
-        SaveConfig(title, window.config)
-    end)
-    
-    -- Make draggable
-    MakeDraggable(MainFrame, TopBar)
-    
-    -- Toggle Visibility with Keybind
-    local visible = true
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == window.config.ToggleKey then
-            visible = not visible
-            if visible then
-                MainFrame.Visible = true
-                CreateTween(MainFrame, {Size = size}, 0.3, Enum.EasingStyle.Back)
-            else
-                CreateTween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3, Enum.EasingStyle.Back)
-                wait(0.3)
-                MainFrame.Visible = false
+        Tundra.Roundify(optionButton, 4)
+        
+        optionButton.MouseButton1Click:Connect(function()
+            dropdown.Value = option
+            button.Text = option
+            toggleDropdown()
+            if callback then
+                callback(option)
             end
-        end
-    end)
-    
-    window.tabs = {}
-    window.currentTab = nil
-    window.elements = {}
-    
-    -- Theme Switching Function
-    function window:SetTheme(themeName)
-        local newTheme = Themes[themeName]
-        if not newTheme then return end
-        
-        window.currentTheme = newTheme
-        window.config.Theme = themeName
-        
-        -- Update colors with animations
-        CreateTween(MainFrame, {BackgroundColor3 = newTheme.Background})
-        CreateTween(GlassEffect, {BackgroundColor3 = Color3.fromRGB(255, 255, 255)})
-        CreateTween(TopBar, {BackgroundColor3 = newTheme.TopBar})
-        CreateTween(CornerFix, {BackgroundColor3 = newTheme.TopBar})
-        CreateTween(SideBar, {BackgroundColor3 = newTheme.SideBar})
-        CreateTween(ProfileSection, {BackgroundColor3 = newTheme.Element})
-        CreateTween(TitleLabel, {TextColor3 = newTheme.Text})
-        CreateTween(SubtitleLabel, {TextColor3 = newTheme.SubText})
-        CreateTween(TitleIcon, {ImageColor3 = newTheme.Accent})
-        CreateTween(MainStroke, {Color = newTheme.Border})
-        CreateTween(Username, {TextColor3 = newTheme.Text})
-        CreateTween(DisplayName, {TextColor3 = newTheme.SubText})
-        CreateTween(AvatarStroke, {Color = newTheme.Accent})
-        
-        -- Update all tabs
-        for _, tab in pairs(window.tabs) do
-            if tab.button then
-                CreateTween(tab.button, {
-                    BackgroundColor3 = tab == window.currentTab and newTheme.Element or newTheme.Element
-                })
-                CreateTween(tab.label, {
-                    TextColor3 = tab == window.currentTab and newTheme.Text or newTheme.SubText
-                })
-                if tab.icon then
-                    CreateTween(tab.icon, {ImageColor3 = tab == window.currentTab and newTheme.Accent or newTheme.SubText})
-                end
-            end
-        end
-        
-        SaveConfig(title, window.config)
-    end
-    
-    -- Config Management
-    function window:SaveConfig()
-        SaveConfig(title, window.config)
-    end
-    
-    function window:LoadConfig()
-        local loadedConfig = LoadConfig(title)
-        if loadedConfig then
-            window.config = loadedConfig
-            if loadedConfig.Theme then
-                window:SetTheme(loadedConfig.Theme)
-            end
-            if loadedConfig.ToggleKey then
-                window.config.ToggleKey = Enum.KeyCode[loadedConfig.ToggleKey]
-            end
-        end
-    end
-    
-    function window:AddTab(name, icon)
-        local tab = {}
-        
-        icon = icon or Icons.Home
-        
-        -- Tab Button
-        local TabButton = Instance.new("TextButton")
-        TabButton.Name = name
-        TabButton.BackgroundColor3 = window.currentTheme.Element
-        TabButton.BackgroundTransparency = 0.15
-        TabButton.BorderSizePixel = 0
-        TabButton.Text = ""
-        TabButton.AutoButtonColor = false
-        TabButton.Parent = TabContainer
-        TabButton.ZIndex = 3
-        
-        if window.tabMode == "Horizontal" then
-            TabButton.Size = UDim2.new(0, 110, 0, 35)
-        else
-            TabButton.Size = UDim2.new(1, 0, 0, 38)
-        end
-        
-        local TabCorner = Instance.new("UICorner")
-        TabCorner.CornerRadius = UDim.new(0, 8)
-        TabCorner.Parent = TabButton
-        
-        local TabStroke = Instance.new("UIStroke")
-        TabStroke.Color = window.currentTheme.Border
-        TabStroke.Thickness = 1
-        TabStroke.Transparency = 0.8
-        TabStroke.Parent = TabButton
-        
-        -- Content container for icon and label
-        local TabContentContainer = Instance.new("Frame")
-        TabContentContainer.Size = UDim2.new(1, -10, 1, 0)
-        TabContentContainer.Position = UDim2.new(0, 5, 0, 0)
-        TabContentContainer.BackgroundTransparency = 1
-        TabContentContainer.Parent = TabButton
-        TabContentContainer.ZIndex = 4
-        
-        -- Icon
-        local TabIcon = Instance.new("ImageLabel")
-        TabIcon.BackgroundTransparency = 1
-        TabIcon.Image = icon
-        TabIcon.ImageColor3 = window.currentTheme.SubText
-        TabIcon.Parent = TabContentContainer
-        TabIcon.ZIndex = 5
-        
-        if window.tabMode == "Horizontal" then
-            TabIcon.Size = UDim2.new(0, 16, 0, 16)
-            TabIcon.Position = UDim2.new(0, 5, 0.5, -8)
-        else
-            TabIcon.Size = UDim2.new(0, 18, 0, 18)
-            TabIcon.Position = UDim2.new(0, 5, 0.5, -9)
-        end
-        
-        -- Label
-        local TabLabel = Instance.new("TextLabel")
-        TabLabel.BackgroundTransparency = 1
-        TabLabel.Text = name
-        TabLabel.TextColor3 = window.currentTheme.SubText
-        TabLabel.Font = Enum.Font.GothamMedium
-        TabLabel.TextXAlignment = Enum.TextXAlignment.Left
-        TabLabel.TextTruncate = Enum.TextTruncate.AtEnd
-        TabLabel.Parent = TabContentContainer
-        TabLabel.ZIndex = 5
-        
-        if window.tabMode == "Horizontal" then
-            TabLabel.Size = UDim2.new(1, -30, 1, 0)
-            TabLabel.Position = UDim2.new(0, 27, 0, 0)
-            TabLabel.TextSize = 12
-        else
-            TabLabel.Size = UDim2.new(1, -35, 1, 0)
-            TabLabel.Position = UDim2.new(0, 30, 0, 0)
-            TabLabel.TextSize = 13
-        end
-        
-        -- Close button for horizontal mode (optional - appears on hover)
-        local TabCloseButton
-        if window.tabMode == "Horizontal" then
-            TabCloseButton = Instance.new("ImageButton")
-            TabCloseButton.Size = UDim2.new(0, 14, 0, 14)
-            TabCloseButton.Position = UDim2.new(1, -18, 0.5, -7)
-            TabCloseButton.BackgroundTransparency = 1
-            TabCloseButton.Image = Icons.X
-            TabCloseButton.ImageColor3 = window.currentTheme.SubText
-            TabCloseButton.ImageTransparency = 1
-            TabCloseButton.Parent = TabContentContainer
-            TabCloseButton.ZIndex = 6
-            
-            TabButton.MouseEnter:Connect(function()
-                if tab ~= window.currentTab then
-                    CreateTween(TabButton, {BackgroundTransparency = 0.05})
-                end
-                CreateTween(TabCloseButton, {ImageTransparency = 0})
-            end)
-            
-            TabButton.MouseLeave:Connect(function()
-                if tab ~= window.currentTab then
-                    CreateTween(TabButton, {BackgroundTransparency = 0.15})
-                end
-                CreateTween(TabCloseButton, {ImageTransparency = 1})
-            end)
-        else
-            TabButton.MouseEnter:Connect(function()
-                if tab ~= window.currentTab then
-                    CreateTween(TabButton, {BackgroundTransparency = 0.05})
-                end
-            end)
-            
-            TabButton.MouseLeave:Connect(function()
-                if tab ~= window.currentTab then
-                    CreateTween(TabButton, {BackgroundTransparency = 0.15})
-                end
-            end)
-        end
-        
-        -- Tab Content
-        local TabContent = Instance.new("ScrollingFrame")
-        TabContent.Name = name .. "Content"
-        TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.BackgroundTransparency = 1
-        TabContent.BorderSizePixel = 0
-        TabContent.ScrollBarThickness = 5
-        TabContent.ScrollBarImageColor3 = window.currentTheme.Accent
-        TabContent.Visible = false
-        TabContent.Parent = ContentContainer
-        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabContent.ZIndex = 2
-        
-        local ContentList = Instance.new("UIListLayout")
-        ContentList.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentList.Padding = UDim.new(0, 10)
-        ContentList.Parent = TabContent
-        
-        ContentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 10)
         end)
         
-        TabButton.MouseButton1Click:Connect(function()
-            for _, t in pairs(window.tabs) do
-                t.content.Visible = false
-                CreateTween(t.button, {BackgroundTransparency = 0.15})
-                CreateTween(t.label, {TextColor3 = window.currentTheme.SubText})
-                if t.icon then
-                    CreateTween(t.icon, {ImageColor3 = window.currentTheme.SubText})
-                end
-            end
-            
-            TabContent.Visible = true
-            window.currentTab = tab
-            CreateTween(TabButton, {BackgroundTransparency = 0.0})
-            CreateTween(TabLabel, {TextColor3 = window.currentTheme.Text})
-            CreateTween(TabIcon, {ImageColor3 = window.currentTheme.Accent})
+        optionButton.MouseEnter:Connect(function()
+            Tundra.Tween(optionButton, {
+                BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].TertiaryBackground
+            }, 0.2)
         end)
         
-        if not window.currentTab then
-            TabButton.BackgroundTransparency = 0.0
-            TabLabel.TextColor3 = window.currentTheme.Text
-            TabIcon.ImageColor3 = window.currentTheme.Accent
-            TabContent.Visible = true
-            window.currentTab = tab
-        end
-        
-        tab.button = TabButton
-        tab.content = TabContent
-        tab.label = TabLabel
-        tab.icon = TabIcon
-        table.insert(window.tabs, tab)
-        
-        function tab:AddButton(text, callback, icon)
-            icon = icon or Icons.Check
-            
-            local Button = Instance.new("TextButton")
-            Button.Name = text
-            Button.Size = UDim2.new(1, -5, 0, 40)
-            Button.BackgroundColor3 = window.currentTheme.Element
-            Button.BackgroundTransparency = 0.15
-            Button.BorderSizePixel = 0
-            Button.Text = ""
-            Button.Parent = TabContent
-            Button.ZIndex = 3
-            
-            local ButtonCorner = Instance.new("UICorner")
-            ButtonCorner.CornerRadius = UDim.new(0, 8)
-            ButtonCorner.Parent = Button
-            
-            local ButtonStroke = Instance.new("UIStroke")
-            ButtonStroke.Color = window.currentTheme.Border
-            ButtonStroke.Thickness = 1
-            ButtonStroke.Transparency = 0.8
-            ButtonStroke.Parent = Button
-            
-            local ButtonIcon = Instance.new("ImageLabel")
-            ButtonIcon.Size = UDim2.new(0, 20, 0, 20)
-            ButtonIcon.Position = UDim2.new(0, 12, 0.5, -10)
-            ButtonIcon.BackgroundTransparency = 1
-            ButtonIcon.Image = icon
-            ButtonIcon.ImageColor3 = window.currentTheme.Accent
-            ButtonIcon.Parent = Button
-            ButtonIcon.ZIndex = 4
-            
-            local ButtonLabel = Instance.new("TextLabel")
-            ButtonLabel.Size = UDim2.new(1, -45, 1, 0)
-            ButtonLabel.Position = UDim2.new(0, 40, 0, 0)
-            ButtonLabel.BackgroundTransparency = 1
-            ButtonLabel.Text = text
-            ButtonLabel.TextColor3 = window.currentTheme.Text
-            ButtonLabel.TextSize = 13
-            ButtonLabel.Font = Enum.Font.GothamMedium
-            ButtonLabel.TextXAlignment = Enum.TextXAlignment.Left
-            ButtonLabel.Parent = Button
-            ButtonLabel.ZIndex = 4
-            
-            Button.MouseEnter:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.05})
-                CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Text})
-            end)
-            
-            Button.MouseLeave:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.15})
-                CreateTween(ButtonIcon, {ImageColor3 = window.currentTheme.Accent})
-            end)
-            
-            Button.MouseButton1Click:Connect(function()
-                CreateTween(Button, {BackgroundTransparency = 0.0}, 0.1)
-                CreateTween(ButtonIcon, {Size = UDim2.new(0, 24, 0, 24)}, 0.1)
-                wait(0.1)
-                CreateTween(Button, {BackgroundTransparency = 0.15}, 0.2)
-                CreateTween(ButtonIcon, {Size = UDim2.new(0, 20, 0, 20)}, 0.2)
-                if callback then
-                    pcall(callback)
-                end
-            end)
-            
-            return Button
-        end
-        
-        function tab:AddToggle(text, default, callback, risky, locked)
-            default = default or false
-            risky = risky or false
-            locked = locked or false
-            
-            local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Name = text
-            ToggleFrame.Size = UDim2.new(1, -5, 0, 40)
-            ToggleFrame.BackgroundColor3 = window.currentTheme.Element
-            ToggleFrame.BackgroundTransparency = 0.15
-            ToggleFrame.BorderSizePixel = 0
-            ToggleFrame.Parent = TabContent
-            ToggleFrame.ZIndex = 3
-            
-            local ToggleCorner = Instance.new("UICorner")
-            ToggleCorner.CornerRadius = UDim.new(0, 8)
-            ToggleCorner.Parent = ToggleFrame
-            
-            local ToggleStroke = Instance.new("UIStroke")
-            ToggleStroke.Color = window.currentTheme.Border
-            ToggleStroke.Thickness = 1
-            ToggleStroke.Transparency = 0.8
-            ToggleStroke.Parent = ToggleFrame
-            
-            if risky then
-                local RiskyStroke = Instance.new("UIStroke")
-                RiskyStroke.Color = window.currentTheme.Warning
-                RiskyStroke.Thickness = 1
-                RiskyStroke.Transparency = 0.6
-                RiskyStroke.Parent = ToggleFrame
-            end
-            
-            -- Lock Icon
-            local LockIcon
-            if locked then
-                LockIcon = Instance.new("ImageLabel")
-                LockIcon.Size = UDim2.new(0, 16, 0, 16)
-                LockIcon.Position = UDim2.new(0, 12, 0.5, -8)
-                LockIcon.BackgroundTransparency = 1
-                LockIcon.Image = Icons.Lock
-                LockIcon.ImageColor3 = window.currentTheme.Error
-                LockIcon.Parent = ToggleFrame
-                LockIcon.ZIndex = 4
-            end
-            
-            local ToggleLabel = Instance.new("TextLabel")
-            ToggleLabel.Size = UDim2.new(1, -90, 1, 0)
-            ToggleLabel.Position = UDim2.new(0, locked and 35 or 12, 0, 0)
-            ToggleLabel.BackgroundTransparency = 1
-            ToggleLabel.Text = text .. (risky and " ⚠" or "")
-            ToggleLabel.TextColor3 = window.currentTheme.Text
-            ToggleLabel.TextSize = 13
-            ToggleLabel.Font = Enum.Font.GothamMedium
-            ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-            ToggleLabel.Parent = ToggleFrame
-            ToggleLabel.ZIndex = 4
-            
-            local ToggleButton = Instance.new("TextButton")
-            ToggleButton.Size = UDim2.new(0, 50, 0, 26)
-            ToggleButton.Position = UDim2.new(1, -60, 0.5, -13)
-            ToggleButton.BackgroundColor3 = default and window.currentTheme.Accent or window.currentTheme.Border
-            ToggleButton.BorderSizePixel = 0
-            ToggleButton.Text = ""
-            ToggleButton.Parent = ToggleFrame
-            ToggleButton.ZIndex = 4
-            
-            if locked then
-                ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-            end
-            
-            local ToggleButtonCorner = Instance.new("UICorner")
-            ToggleButtonCorner.CornerRadius = UDim.new(1, 0)
-            ToggleButtonCorner.Parent = ToggleButton
-            
-            local ToggleCircle = Instance.new("Frame")
-            ToggleCircle.Size = UDim2.new(0, 20, 0, 20)
-            ToggleCircle.Position = default and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 3, 0.5, -10)
-            ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            ToggleCircle.BorderSizePixel = 0
-            ToggleCircle.Parent = ToggleButton
-            ToggleCircle.ZIndex = 5
-            
-            local CircleCorner = Instance.new("UICorner")
-            CircleCorner.CornerRadius = UDim.new(1, 0)
-            CircleCorner.Parent = ToggleCircle
-            
-            local toggled = default
-            
-            ToggleButton.MouseButton1Click:Connect(function()
-                if locked then
-                    -- Show warning notification
-                    return
-                end
-                
-                toggled = not toggled
-                
-                if toggled then
-                    CreateTween(ToggleButton, {BackgroundColor3 = window.currentTheme.Accent})
-                    CreateTween(ToggleCircle, {Position = UDim2.new(1, -23, 0.5, -10)})
-                else
-                    CreateTween(ToggleButton, {BackgroundColor3 = window.currentTheme.Border})
-                    CreateTween(ToggleCircle, {Position = UDim2.new(0, 3, 0.5, -10)})
-                end
-                
-                window.config.Elements[text] = toggled
-                SaveConfig(window.config.Title, window.config)
-                
-                if callback then
-                    pcall(callback, toggled)
-                end
-            end)
-            
-            ToggleButton.MouseEnter:Connect(function()
-                if not locked then
-                    CreateTween(ToggleCircle, {Size = UDim2.new(0, 22, 0, 22)}, 0.15)
-                end
-            end)
-            
-            ToggleButton.MouseLeave:Connect(function()
-                CreateTween(ToggleCircle, {Size = UDim2.new(0, 20, 0, 20)}, 0.15)
-            end)
-            
-            window.config.Elements[text] = toggled
-            
-            return ToggleFrame
-        end
-        
-        function tab:AddSlider(text, min, max, default, callback, icon)
-            icon = icon or Icons.Settings
-            
-            local SliderFrame = Instance.new("Frame")
-            SliderFrame.Name = text
-            SliderFrame.Size = UDim2.new(1, -5, 0, 60)
-            SliderFrame.BackgroundColor3 = window.currentTheme.Element
-            SliderFrame.BackgroundTransparency = 0.15
-            SliderFrame.BorderSizePixel = 0
-            SliderFrame.Parent = TabContent
-            SliderFrame.ZIndex = 3
-            
-            local SliderCorner = Instance.new("UICorner")
-            SliderCorner.CornerRadius = UDim.new(0, 8)
-            SliderCorner.Parent = SliderFrame
-            
-            local SliderStroke = Instance.new("UIStroke")
-            SliderStroke.Color = window.currentTheme.Border
-            SliderStroke.Thickness = 1
-            SliderStroke.Transparency = 0.8
-            SliderStroke.Parent = SliderFrame
-            
-            local SliderIcon = Instance.new("ImageLabel")
-            SliderIcon.Size = UDim2.new(0, 18, 0, 18)
-            SliderIcon.Position = UDim2.new(0, 12, 0, 8)
-            SliderIcon.BackgroundTransparency = 1
-            SliderIcon.Image = icon
-            SliderIcon.ImageColor3 = window.currentTheme.Accent
-            SliderIcon.Parent = SliderFrame
-            SliderIcon.ZIndex = 4
-            
-            local SliderLabel = Instance.new("TextLabel")
-            SliderLabel.Size = UDim2.new(1, -100, 0, 25)
-            SliderLabel.Position = UDim2.new(0, 38, 0, 5)
-            SliderLabel.BackgroundTransparency = 1
-            SliderLabel.Text = text
-            SliderLabel.TextColor3 = window.currentTheme.Text
-            SliderLabel.TextSize = 13
-            SliderLabel.Font = Enum.Font.GothamMedium
-            SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-            SliderLabel.Parent = SliderFrame
-            SliderLabel.ZIndex = 4
-            
-            local SliderValue = Instance.new("TextLabel")
-            SliderValue.Size = UDim2.new(0, 50, 0, 25)
-            SliderValue.Position = UDim2.new(1, -60, 0, 5)
-            SliderValue.BackgroundTransparency = 1
-            SliderValue.Text = tostring(default)
-            SliderValue.TextColor3 = window.currentTheme.SubText
-            SliderValue.TextSize = 13
-            SliderValue.Font = Enum.Font.GothamBold
-            SliderValue.TextXAlignment = Enum.TextXAlignment.Right
-            SliderValue.Parent = SliderFrame
-            SliderValue.ZIndex = 4
-            
-            local SliderBar = Instance.new("Frame")
-            SliderBar.Size = UDim2.new(1, -24, 0, 6)
-            SliderBar.Position = UDim2.new(0, 12, 1, -20)
-            SliderBar.BackgroundColor3 = window.currentTheme.Border
-            SliderBar.BorderSizePixel = 0
-            SliderBar.Parent = SliderFrame
-            SliderBar.ZIndex = 4
-            
-            local SliderBarCorner = Instance.new("UICorner")
-            SliderBarCorner.CornerRadius = UDim.new(1, 0)
-            SliderBarCorner.Parent = SliderBar
-            
-            local SliderFill = Instance.new("Frame")
-            SliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-            SliderFill.BackgroundColor3 = window.currentTheme.Accent
-            SliderFill.BorderSizePixel = 0
-            SliderFill.Parent = SliderBar
-            SliderFill.ZIndex = 5
-            
-            local SliderFillCorner = Instance.new("UICorner")
-            SliderFillCorner.CornerRadius = UDim.new(1, 0)
-            SliderFillCorner.Parent = SliderFill
-            
-            local SliderButton = Instance.new("Frame")
-            SliderButton.Size = UDim2.new(0, 14, 0, 14)
-            SliderButton.Position = UDim2.new((default - min) / (max - min), -7, 0.5, -7)
-            SliderButton.BackgroundColor3 = window.currentTheme.Text
-            SliderButton.BorderSizePixel = 0
-            SliderButton.Parent = SliderBar
-            SliderButton.ZIndex = 6
-            
-            local SliderButtonCorner = Instance.new("UICorner")
-            SliderButtonCorner.CornerRadius = UDim.new(1, 0)
-            SliderButtonCorner.Parent = SliderButton
-            
-            local dragging = false
-            
-            SliderBar.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true
-                    CreateTween(SliderButton, {Size = UDim2.new(0, 18, 0, 18)}, 0.15)
-                end
-            end)
-            
-            SliderBar.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = false
-                    CreateTween(SliderButton, {Size = UDim2.new(0, 14, 0, 14)}, 0.15)
-                end
-            end)
-            
-            UserInputService.InputChanged:Connect(function(input)
-                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    local pos = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-                    local value = math.floor(min + (max - min) * pos)
-                    
-                    SliderFill.Size = UDim2.new(pos, 0, 1, 0)
-                    SliderButton.Position = UDim2.new(pos, -7, 0.5, -7)
-                    SliderValue.Text = tostring(value)
-                    
-                    window.config.Elements[text] = value
-                    
-                    if callback then
-                        pcall(callback, value)
-                    end
-                end
-            end)
-            
-            window.config.Elements[text] = default
-            
-            return SliderFrame
-        end
-        
-        function tab:AddDropdown(text, options, callback, icon)
-            icon = icon or Icons.Menu
-            
-            local DropdownFrame = Instance.new("Frame")
-            DropdownFrame.Name = text
-            DropdownFrame.Size = UDim2.new(1, -5, 0, 40)
-            DropdownFrame.BackgroundColor3 = window.currentTheme.Element
-            DropdownFrame.BackgroundTransparency = 0.15
-            DropdownFrame.BorderSizePixel = 0
-            DropdownFrame.ClipsDescendants = true
-            DropdownFrame.Parent = TabContent
-            DropdownFrame.ZIndex = 3
-            
-            local DropdownCorner = Instance.new("UICorner")
-            DropdownCorner.CornerRadius = UDim.new(0, 8)
-            DropdownCorner.Parent = DropdownFrame
-            
-            local DropdownStroke = Instance.new("UIStroke")
-            DropdownStroke.Color = window.currentTheme.Border
-            DropdownStroke.Thickness = 1
-            DropdownStroke.Transparency = 0.8
-            DropdownStroke.Parent = DropdownFrame
-            
-            local DropdownIcon = Instance.new("ImageLabel")
-            DropdownIcon.Size = UDim2.new(0, 18, 0, 18)
-            DropdownIcon.Position = UDim2.new(0, 12, 0, 13)
-            DropdownIcon.BackgroundTransparency = 1
-            DropdownIcon.Image = icon
-            DropdownIcon.ImageColor3 = window.currentTheme.Accent
-            DropdownIcon.Parent = DropdownFrame
-            DropdownIcon.ZIndex = 4
-            
-            local DropdownButton = Instance.new("TextButton")
-            DropdownButton.Size = UDim2.new(1, 0, 0, 45)
-            DropdownButton.BackgroundTransparency = 1
-            DropdownButton.Text = ""
-            DropdownButton.Parent = DropdownFrame
-            DropdownButton.ZIndex = 4
-            
-            local DropdownLabel = Instance.new("TextLabel")
-            DropdownLabel.Size = UDim2.new(1, -70, 1, 0)
-            DropdownLabel.Position = UDim2.new(0, 38, 0, 0)
-            DropdownLabel.BackgroundTransparency = 1
-            DropdownLabel.Text = text
-            DropdownLabel.TextColor3 = window.currentTheme.Text
-            DropdownLabel.TextSize = 13
-            DropdownLabel.Font = Enum.Font.GothamMedium
-            DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
-            DropdownLabel.Parent = DropdownFrame
-            DropdownLabel.ZIndex = 4
-            
-            local DropdownArrow = Instance.new("TextLabel")
-            DropdownArrow.Size = UDim2.new(0, 30, 0, 45)
-            DropdownArrow.Position = UDim2.new(1, -40, 0, 0)
-            DropdownArrow.BackgroundTransparency = 1
-            DropdownArrow.Text = "⌄"
-            DropdownArrow.TextColor3 = window.currentTheme.SubText
-            DropdownArrow.TextSize = 18
-            DropdownArrow.Font = Enum.Font.GothamBold
-            DropdownArrow.Parent = DropdownFrame
-            DropdownArrow.ZIndex = 4
-            
-            local DropdownContainer = Instance.new("Frame")
-            DropdownContainer.Size = UDim2.new(1, 0, 0, 0)
-            DropdownContainer.Position = UDim2.new(0, 0, 0, 45)
-            DropdownContainer.BackgroundTransparency = 1
-            DropdownContainer.Parent = DropdownFrame
-            DropdownContainer.ZIndex = 4
-            
-            local DropdownList = Instance.new("UIListLayout")
-            DropdownList.SortOrder = Enum.SortOrder.LayoutOrder
-            DropdownList.Parent = DropdownContainer
-            
-            local isOpen = false
-            
-            for _, option in ipairs(options) do
-                local OptionButton = Instance.new("TextButton")
-                OptionButton.Size = UDim2.new(1, 0, 0, 35)
-                OptionButton.BackgroundColor3 = window.currentTheme.Background
-                OptionButton.BackgroundTransparency = 0.15
-                OptionButton.BorderSizePixel = 0
-                OptionButton.Text = option
-                OptionButton.TextColor3 = window.currentTheme.SubText
-                OptionButton.TextSize = 12
-                OptionButton.Font = Enum.Font.Gotham
-                OptionButton.Parent = DropdownContainer
-                OptionButton.ZIndex = 5
-                
-                OptionButton.MouseEnter:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.15, TextColor3 = window.currentTheme.Text})
-                end)
-                
-                OptionButton.MouseLeave:Connect(function()
-                    CreateTween(OptionButton, {BackgroundTransparency = 0.15, TextColor3 = window.currentTheme.SubText})
-                end)
-                
-                OptionButton.MouseButton1Click:Connect(function()
-                    DropdownLabel.Text = text .. ": " .. option
-                    isOpen = false
-                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -5, 0, 40)})
-                    CreateTween(DropdownArrow, {Rotation = 0})
-                    
-                    window.config.Elements[text] = option
-                    SaveConfig(window.config.Title, window.config)
-                    
-                    if callback then
-                        pcall(callback, option)
-                    end
-                end)
-            end
-            
-            DropdownButton.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                
-                if isOpen then
-                    local contentHeight = #options * 35
-                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -10, 0, 45 + contentHeight)}, 0.3)
-                    CreateTween(DropdownArrow, {Rotation = 180}, 0.3)
-                else
-                    CreateTween(DropdownFrame, {Size = UDim2.new(1, -5, 0, 40)}, 0.3)
-                    CreateTween(DropdownArrow, {Rotation = 0}, 0.3)
-                end
-            end)
-            
-            return DropdownFrame
-        end
-        
-        function tab:AddColorPicker(text, defaultColor, callback)
-            local ColorFrame = Instance.new("Frame")
-            ColorFrame.Name = text
-            ColorFrame.Size = UDim2.new(1, -5, 0, 40)
-            ColorFrame.BackgroundColor3 = window.currentTheme.Element
-            ColorFrame.BackgroundTransparency = 0.15
-            ColorFrame.BorderSizePixel = 0
-            ColorFrame.ClipsDescendants = true
-            ColorFrame.Parent = TabContent
-            ColorFrame.ZIndex = 3
-            
-            local ColorCorner = Instance.new("UICorner")
-            ColorCorner.CornerRadius = UDim.new(0, 8)
-            ColorCorner.Parent = ColorFrame
-            
-            local ColorStroke = Instance.new("UIStroke")
-            ColorStroke.Color = window.currentTheme.Border
-            ColorStroke.Thickness = 1
-            ColorStroke.Transparency = 0.8
-            ColorStroke.Parent = ColorFrame
-            
-            local ColorIcon = Instance.new("ImageLabel")
-            ColorIcon.Size = UDim2.new(0, 18, 0, 18)
-            ColorIcon.Position = UDim2.new(0, 12, 0, 13)
-            ColorIcon.BackgroundTransparency = 1
-            ColorIcon.Image = Icons.Palette
-            ColorIcon.ImageColor3 = window.currentTheme.Accent
-            ColorIcon.Parent = ColorFrame
-            ColorIcon.ZIndex = 4
-            
-            local ColorLabel = Instance.new("TextLabel")
-            ColorLabel.Size = UDim2.new(1, -90, 1, 0)
-            ColorLabel.Position = UDim2.new(0, 38, 0, 0)
-            ColorLabel.BackgroundTransparency = 1
-            ColorLabel.Text = text
-            ColorLabel.TextColor3 = window.currentTheme.Text
-            ColorLabel.TextSize = 13
-            ColorLabel.Font = Enum.Font.GothamMedium
-            ColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-            ColorLabel.Parent = ColorFrame
-            ColorLabel.ZIndex = 4
-            
-            local ColorPreview = Instance.new("Frame")
-            ColorPreview.Size = UDim2.new(0, 30, 0, 30)
-            ColorPreview.Position = UDim2.new(1, -42, 0.5, -15)
-            ColorPreview.BackgroundColor3 = defaultColor or Color3.fromRGB(255, 255, 255)
-            ColorPreview.BorderSizePixel = 0
-            ColorPreview.Parent = ColorFrame
-            ColorPreview.ZIndex = 4
-            
-            local PreviewCorner = Instance.new("UICorner")
-            PreviewCorner.CornerRadius = UDim.new(0, 6)
-            PreviewCorner.Parent = ColorPreview
-            
-            local PreviewStroke = Instance.new("UIStroke")
-            PreviewStroke.Color = window.currentTheme.Border
-            PreviewStroke.Thickness = 2
-            PreviewStroke.Parent = ColorPreview
-            
-            local ColorButton = Instance.new("TextButton")
-            ColorButton.Size = UDim2.new(1, 0, 0, 45)
-            ColorButton.BackgroundTransparency = 1
-            ColorButton.Text = ""
-            ColorButton.Parent = ColorFrame
-            ColorButton.ZIndex = 4
-            
-            local isOpen = false
-            local currentColor = defaultColor or Color3.fromRGB(255, 255, 255)
-            local h, s, v = RGBToHSV(currentColor.R * 255, currentColor.G * 255, currentColor.B * 255)
-            
-            -- Color Picker Panel
-            local PickerPanel = Instance.new("Frame")
-            PickerPanel.Size = UDim2.new(1, -20, 0, 200)
-            PickerPanel.Position = UDim2.new(0, 10, 0, 50)
-            PickerPanel.BackgroundColor3 = window.currentTheme.Background
-            PickerPanel.BackgroundTransparency = 0.15
-            PickerPanel.BorderSizePixel = 0
-            PickerPanel.Visible = false
-            PickerPanel.Parent = ColorFrame
-            PickerPanel.ZIndex = 5
-            
-            local PickerCorner = Instance.new("UICorner")
-            PickerCorner.CornerRadius = UDim.new(0, 8)
-            PickerCorner.Parent = PickerPanel
-            
-            local PickerStroke = Instance.new("UIStroke")
-            PickerStroke.Color = window.currentTheme.Border
-            PickerStroke.Thickness = 1
-            PickerStroke.Transparency = 0.7
-            PickerStroke.Parent = PickerPanel
-            
-            -- SV Picker
-            local SVPicker = Instance.new("ImageLabel")
-            SVPicker.Size = UDim2.new(1, -70, 1, -20)
-            SVPicker.Position = UDim2.new(0, 8, 0, 8)
-            SVPicker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            SVPicker.BorderSizePixel = 0
-            SVPicker.Image = "rbxassetid://4155801252"
-            SVPicker.Parent = PickerPanel
-            SVPicker.ZIndex = 6
-            
-            local SVCorner = Instance.new("UICorner")
-            SVCorner.CornerRadius = UDim.new(0, 6)
-            SVCorner.Parent = SVPicker
-            
-            local SVCursor = Instance.new("Frame")
-            SVCursor.Size = UDim2.new(0, 10, 0, 10)
-            SVCursor.Position = UDim2.new(s, -5, 1 - v, -5)
-            SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            SVCursor.BorderSizePixel = 2
-            SVCursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            SVCursor.Parent = SVPicker
-            SVCursor.ZIndex = 7
-            
-            local SVCursorCorner = Instance.new("UICorner")
-            SVCursorCorner.CornerRadius = UDim.new(1, 0)
-            SVCursorCorner.Parent = SVCursor
-            
-            -- Hue Picker
-            local HuePicker = Instance.new("ImageLabel")
-            HuePicker.Size = UDim2.new(0, 25, 1, -20)
-            HuePicker.Position = UDim2.new(1, -33, 0, 8)
-            HuePicker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            HuePicker.BorderSizePixel = 0
-            HuePicker.Image = "rbxassetid://3641079629"
-            HuePicker.Parent = PickerPanel
-            HuePicker.ZIndex = 6
-            
-            local HueCorner = Instance.new("UICorner")
-            HueCorner.CornerRadius = UDim.new(0, 6)
-            HueCorner.Parent = HuePicker
-            
-            local HueCursor = Instance.new("Frame")
-            HueCursor.Size = UDim2.new(1, 6, 0, 4)
-            HueCursor.Position = UDim2.new(0, -3, h, -2)
-            HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            HueCursor.BorderSizePixel = 2
-            HueCursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            HueCursor.Parent = HuePicker
-            HueCursor.ZIndex = 7
-            
-            local function updateColor()
-                local newColor = HSVToRGB(h, s, v)
-                currentColor = newColor
-                ColorPreview.BackgroundColor3 = newColor
-                SVPicker.BackgroundColor3 = HSVToRGB(h, 1, 1)
-                
-                window.config.Elements[text] = {R = newColor.R, G = newColor.G, B = newColor.B}
-                
-                if callback then
-                    pcall(callback, newColor)
-                end
-            end
-            
-            local svDragging = false
-            local hueDragging = false
-            
-            SVPicker.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    svDragging = true
-                end
-            end)
-            
-            SVPicker.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    svDragging = false
-                end
-            end)
-            
-            HuePicker.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    hueDragging = true
-                end
-            end)
-            
-            HuePicker.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    hueDragging = false
-                end
-            end)
-            
-            UserInputService.InputChanged:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                    if svDragging then
-                        local posX = math.clamp((input.Position.X - SVPicker.AbsolutePosition.X) / SVPicker.AbsoluteSize.X, 0, 1)
-                        local posY = math.clamp((input.Position.Y - SVPicker.AbsolutePosition.Y) / SVPicker.AbsoluteSize.Y, 0, 1)
-                        
-                        s = posX
-                        v = 1 - posY
-                        
-                        SVCursor.Position = UDim2.new(s, -5, 1 - v, -5)
-                        updateColor()
-                    elseif hueDragging then
-                        local posY = math.clamp((input.Position.Y - HuePicker.AbsolutePosition.Y) / HuePicker.AbsoluteSize.Y, 0, 1)
-                        h = posY
-                        
-                        HueCursor.Position = UDim2.new(0, -3, h, -2)
-                        updateColor()
-                    end
-                end
-            end)
-            
-            ColorButton.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                PickerPanel.Visible = isOpen
-                
-                if isOpen then
-                    CreateTween(ColorFrame, {Size = UDim2.new(1, -10, 0, 260)}, 0.3)
-                else
-                    CreateTween(ColorFrame, {Size = UDim2.new(1, -5, 0, 40)}, 0.3)
-                end
-            end)
-            
-            window.config.Elements[text] = {R = currentColor.R, G = currentColor.G, B = currentColor.B}
-            
-            return ColorFrame
-        end
-        
-        function tab:AddLabel(text, icon)
-            icon = icon or nil
-            
-            local Label = Instance.new("Frame")
-            Label.Name = text
-            Label.Size = UDim2.new(1, -10, 0, 35)
-            Label.BackgroundTransparency = 1
-            Label.Parent = TabContent
-            Label.ZIndex = 3
-            
-            if icon then
-                local LabelIcon = Instance.new("ImageLabel")
-                LabelIcon.Size = UDim2.new(0, 18, 0, 18)
-                LabelIcon.Position = UDim2.new(0, 5, 0.5, -9)
-                LabelIcon.BackgroundTransparency = 1
-                LabelIcon.Image = icon
-                LabelIcon.ImageColor3 = window.currentTheme.Accent
-                LabelIcon.Parent = Label
-                LabelIcon.ZIndex = 4
-            end
-            
-            local LabelText = Instance.new("TextLabel")
-            LabelText.Size = UDim2.new(1, icon and -30 or -10, 1, 0)
-            LabelText.Position = UDim2.new(0, icon and 28 or 5, 0, 0)
-            LabelText.BackgroundTransparency = 1
-            LabelText.Text = text
-            LabelText.TextColor3 = window.currentTheme.SubText
-            LabelText.TextSize = 13
-            LabelText.Font = Enum.Font.GothamMedium
-            LabelText.TextXAlignment = Enum.TextXAlignment.Left
-            LabelText.TextWrapped = true
-            LabelText.Parent = Label
-            LabelText.ZIndex = 4
-            
-            return Label
-        end
-        
-        function tab:AddWarning(text, warningText)
-            local WarningFrame = Instance.new("Frame")
-            WarningFrame.Name = text
-            WarningFrame.Size = UDim2.new(1, -10, 0, 70)
-            WarningFrame.BackgroundColor3 = window.currentTheme.Warning
-            WarningFrame.BackgroundTransparency = 0.85
-            WarningFrame.BorderSizePixel = 0
-            WarningFrame.Parent = TabContent
-            WarningFrame.ZIndex = 3
-            
-            local WarningCorner = Instance.new("UICorner")
-            WarningCorner.CornerRadius = UDim.new(0, 8)
-            WarningCorner.Parent = WarningFrame
-            
-            local WarningStroke = Instance.new("UIStroke")
-            WarningStroke.Color = window.currentTheme.Warning
-            WarningStroke.Thickness = 2
-            WarningStroke.Transparency = 0.4
-            WarningStroke.Parent = WarningFrame
-            
-            local WarningIcon = Instance.new("ImageLabel")
-            WarningIcon.Size = UDim2.new(0, 24, 0, 24)
-            WarningIcon.Position = UDim2.new(0, 12, 0, 10)
-            WarningIcon.BackgroundTransparency = 1
-            WarningIcon.Image = Icons.Alert
-            WarningIcon.ImageColor3 = window.currentTheme.Warning
-            WarningIcon.Parent = WarningFrame
-            WarningIcon.ZIndex = 4
-            
-            local WarningTitle = Instance.new("TextLabel")
-            WarningTitle.Size = UDim2.new(1, -50, 0, 25)
-            WarningTitle.Position = UDim2.new(0, 45, 0, 8)
-            WarningTitle.BackgroundTransparency = 1
-            WarningTitle.Text = text
-            WarningTitle.TextColor3 = window.currentTheme.Warning
-            WarningTitle.TextSize = 14
-            WarningTitle.Font = Enum.Font.GothamBold
-            WarningTitle.TextXAlignment = Enum.TextXAlignment.Left
-            WarningTitle.Parent = WarningFrame
-            WarningTitle.ZIndex = 4
-            
-            local WarningDescription = Instance.new("TextLabel")
-            WarningDescription.Size = UDim2.new(1, -50, 0, 30)
-            WarningDescription.Position = UDim2.new(0, 45, 0, 32)
-            WarningDescription.BackgroundTransparency = 1
-            WarningDescription.Text = warningText
-            WarningDescription.TextColor3 = window.currentTheme.Text
-            WarningDescription.TextSize = 11
-            WarningDescription.Font = Enum.Font.Gotham
-            WarningDescription.TextXAlignment = Enum.TextXAlignment.Left
-            WarningDescription.TextWrapped = true
-            WarningDescription.Parent = WarningFrame
-            WarningDescription.ZIndex = 4
-            
-            return WarningFrame
-        end
-        
-        function tab:AddKeybind(text, default, callback)
-            local KeybindFrame = Instance.new("Frame")
-            KeybindFrame.Name = text
-            KeybindFrame.Size = UDim2.new(1, -5, 0, 40)
-            KeybindFrame.BackgroundColor3 = window.currentTheme.Element
-            KeybindFrame.BackgroundTransparency = 0.15
-            KeybindFrame.BorderSizePixel = 0
-            KeybindFrame.Parent = TabContent
-            KeybindFrame.ZIndex = 3
-            
-            local KeybindCorner = Instance.new("UICorner")
-            KeybindCorner.CornerRadius = UDim.new(0, 8)
-            KeybindCorner.Parent = KeybindFrame
-            
-            local KeybindStroke = Instance.new("UIStroke")
-            KeybindStroke.Color = window.currentTheme.Border
-            KeybindStroke.Thickness = 1
-            KeybindStroke.Transparency = 0.8
-            KeybindStroke.Parent = KeybindFrame
-            
-            local KeybindIcon = Instance.new("ImageLabel")
-            KeybindIcon.Size = UDim2.new(0, 18, 0, 18)
-            KeybindIcon.Position = UDim2.new(0, 12, 0.5, -9)
-            KeybindIcon.BackgroundTransparency = 1
-            KeybindIcon.Image = Icons.Keyboard
-            KeybindIcon.ImageColor3 = window.currentTheme.Accent
-            KeybindIcon.Parent = KeybindFrame
-            KeybindIcon.ZIndex = 4
-            
-            local KeybindLabel = Instance.new("TextLabel")
-            KeybindLabel.Size = UDim2.new(1, -140, 1, 0)
-            KeybindLabel.Position = UDim2.new(0, 38, 0, 0)
-            KeybindLabel.BackgroundTransparency = 1
-            KeybindLabel.Text = text
-            KeybindLabel.TextColor3 = window.currentTheme.Text
-            KeybindLabel.TextSize = 13
-            KeybindLabel.Font = Enum.Font.GothamMedium
-            KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
-            KeybindLabel.Parent = KeybindFrame
-            KeybindLabel.ZIndex = 4
-            
-            local KeybindButton = Instance.new("TextButton")
-            KeybindButton.Size = UDim2.new(0, 100, 0, 32)
-            KeybindButton.Position = UDim2.new(1, -110, 0.5, -16)
-            KeybindButton.BackgroundColor3 = window.currentTheme.Background
-            KeybindButton.BackgroundTransparency = 0.15
-            KeybindButton.BorderSizePixel = 0
-            KeybindButton.Text = default and default.Name or "None"
-            KeybindButton.TextColor3 = window.currentTheme.Text
-            KeybindButton.TextSize = 12
-            KeybindButton.Font = Enum.Font.GothamBold
-            KeybindButton.Parent = KeybindFrame
-            KeybindButton.ZIndex = 4
-            
-            local KeybindButtonCorner = Instance.new("UICorner")
-            KeybindButtonCorner.CornerRadius = UDim.new(0, 6)
-            KeybindButtonCorner.Parent = KeybindButton
-            
-            local KeybindButtonStroke = Instance.new("UIStroke")
-            KeybindButtonStroke.Color = window.currentTheme.Border
-            KeybindButtonStroke.Thickness = 1
-            KeybindButtonStroke.Transparency = 0.8
-            KeybindButtonStroke.Parent = KeybindButton
-            
-            local currentKey = default
-            local listening = false
-            
-            KeybindButton.MouseButton1Click:Connect(function()
-                listening = true
-                KeybindButton.Text = "..."
-                CreateTween(KeybindButton, {BackgroundColor3 = window.currentTheme.Accent})
-            end)
-            
-            UserInputService.InputBegan:Connect(function(input, gameProcessed)
-                if listening and not gameProcessed then
-                    if input.UserInputType == Enum.UserInputType.Keyboard then
-                        currentKey = input.KeyCode
-                        KeybindButton.Text = input.KeyCode.Name
-                        listening = false
-                        CreateTween(KeybindButton, {BackgroundColor3 = window.currentTheme.Background})
-                        
-                        window.config.Elements[text] = input.KeyCode.Name
-                        SaveConfig(window.config.Title, window.config)
-                        
-                        if callback then
-                            pcall(callback, input.KeyCode)
-                        end
-                    end
-                end
-            end)
-            
-            window.config.Elements[text] = default and default.Name or "None"
-            
-            return KeybindFrame
-        end
-        
-        return tab
+        optionButton.MouseLeave:Connect(function()
+            Tundra.Tween(optionButton, {
+                BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
+            }, 0.2)
+        end)
     end
     
-    -- Load saved config
-    window:LoadConfig()
-    
-    return window
+    return {
+        Frame = container,
+        GetValue = function()
+            return dropdown.Value
+        end,
+        SetValue = function(value)
+            if table.find(options, value) then
+                dropdown.Value = value
+                button.Text = value
+                if callback then
+                    callback(value)
+                end
+            end
+        end,
+        Lock = function()
+            Tundra.LockElement(button)
+        end,
+        Unlock = function()
+            Tundra.UnlockElement(button)
+        end
+    }
 end
+
+-- ====================
+-- KEYBIND
+-- ====================
+function Tundra.CreateKeybind(parent, keybindName, defaultKey, callback, mode)
+    mode = mode or "Toggle" -- Toggle, Hold, Always
+    
+    local keybind = {
+        Value = defaultKey or Enum.KeyCode.E,
+        Mode = mode,
+        Active = false,
+        Listening = false
+    }
+    
+    local container = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 35),
+        BackgroundTransparency = 1,
+        LayoutOrder = parent:GetChildren().Size
+    })
+    
+    local label = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(1, -100, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = keybindName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    local button = Tundra.Create("TextButton", {
+        Parent = container,
+        Size = UDim2.new(0, 90, 1, 0),
+        Position = UDim2.new(1, -90, 0, 0),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Text = tostring(keybind.Value):gsub("Enum.KeyCode.", ""),
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        Font = Enum.Font.SourceSans
+    })
+    
+    Tundra.Roundify(button, 6)
+    
+    local function setKey(key)
+        keybind.Value = key
+        button.Text = tostring(key):gsub("Enum.KeyCode.", "")
+        keybind.Listening = false
+        button.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
+    end
+    
+    button.MouseButton1Click:Connect(function()
+        if not Tundra.IsLocked(button) then
+            keybind.Listening = true
+            button.Text = "..."
+            button.BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary
+        end
+    end)
+    
+    UserInputService.InputBegan:Connect(function(input)
+        if keybind.Listening then
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                setKey(input.KeyCode)
+            end
+        elseif input.KeyCode == keybind.Value then
+            if mode == "Toggle" then
+                keybind.Active = not keybind.Active
+                if callback then
+                    callback(keybind.Active)
+                end
+            elseif mode == "Hold" then
+                keybind.Active = true
+                if callback then
+                    callback(true)
+                end
+            elseif mode == "Always" then
+                if callback then
+                    callback()
+                end
+            end
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if mode == "Hold" and input.KeyCode == keybind.Value then
+            keybind.Active = false
+            if callback then
+                callback(false)
+            end
+        end
+    end)
+    
+    return {
+        Frame = container,
+        GetKey = function()
+            return keybind.Value
+        end,
+        SetKey = function(key)
+            setKey(key)
+        end,
+        GetMode = function()
+            return keybind.Mode
+        end,
+        SetMode = function(newMode)
+            keybind.Mode = newMode
+        end,
+        Lock = function()
+            Tundra.LockElement(button)
+        end,
+        Unlock = function()
+            Tundra.UnlockElement(button)
+        end
+    }
+end
+
+-- ====================
+-- INPUT FIELD
+-- ====================
+function Tundra.CreateInput(parent, inputName, placeholder, callback)
+    local container = Tundra.Create("Frame", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 60),
+        BackgroundTransparency = 1,
+        LayoutOrder = parent:GetChildren().Size
+    })
+    
+    local label = Tundra.Create("TextLabel", {
+        Parent = container,
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = inputName,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    local textBox = Tundra.Create("TextBox", {
+        Parent = container,
+        Size = UDim2.new(1, 0, 0, 35),
+        Position = UDim2.new(0, 0, 0, 25),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground,
+        Text = "",
+        PlaceholderText = placeholder or "Enter text...",
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        PlaceholderColor3 = Tundra.Themes[Tundra.CurrentTheme].DisabledText,
+        TextSize = 14,
+        Font = Enum.Font.SourceSans,
+        ClearTextOnFocus = false
+    })
+    
+    Tundra.Roundify(textBox, 6)
+    
+    textBox.Focused:Connect(function()
+        Tundra.Tween(textBox, {
+            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].TertiaryBackground
+        }, 0.2)
+    end)
+    
+    textBox.FocusLost:Connect(function()
+        Tundra.Tween(textBox, {
+            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].SecondaryBackground
+        }, 0.2)
+        if callback then
+            callback(textBox.Text)
+        end
+    end)
+    
+    return {
+        Frame = container,
+        GetText = function()
+            return textBox.Text
+        end,
+        SetText = function(text)
+            textBox.Text = text
+        end,
+        Lock = function()
+            Tundra.LockElement(textBox)
+            textBox.TextEditable = false
+        end,
+        Unlock = function()
+            Tundra.UnlockElement(textBox)
+            textBox.TextEditable = true
+        end
+    }
+end
+
+-- ====================
+-- LABEL
+-- ====================
+function Tundra.CreateLabel(parent, labelText)
+    local label = Tundra.Create("TextLabel", {
+        Parent = parent,
+        Size = UDim2.new(1, -20, 0, 25),
+        BackgroundTransparency = 1,
+        Text = labelText,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSans,
+        LayoutOrder = parent:GetChildren().Size,
+        TextWrapped = true
+    })
+    
+    return {
+        Label = label,
+        SetText = function(text)
+            label.Text = text
+        end
+    }
+end
+
+-- ====================
+-- WARNING BOX
+-- ====================
+function Tundra.ShowWarning(title, message, buttons)
+    local warning = Tundra.Create("ScreenGui", {
+        Name = "TundraWarning",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Global
+    })
+    
+    local overlay = Tundra.Create("Frame", {
+        Parent = warning,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.5,
+        BorderSizePixel = 0
+    })
+    
+    local mainFrame = Tundra.Create("Frame", {
+        Parent = overlay,
+        Size = UDim2.new(0, 400, 0, 200),
+        Position = UDim2.new(0.5, -200, 0.5, -100),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(mainFrame, 12)
+    Tundra.AddShadow(mainFrame, 0.5)
+    
+    -- Warning Icon
+    local icon = Tundra.Create("TextLabel", {
+        Parent = mainFrame,
+        Size = UDim2.new(0, 50, 0, 50),
+        Position = UDim2.new(0.5, -25, 0, 20),
+        BackgroundTransparency = 1,
+        Text = "⚠",
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Warning,
+        TextSize = 40,
+        Font = Enum.Font.SourceSansBold
+    })
+    
+    -- Title
+    local titleLabel = Tundra.Create("TextLabel", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, -40, 0, 30),
+        Position = UDim2.new(0, 20, 0, 80),
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 18,
+        Font = Enum.Font.SourceSansSemibold,
+        TextWrapped = true
+    })
+    
+    -- Message
+    local messageLabel = Tundra.Create("TextLabel", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 0, 110),
+        BackgroundTransparency = 1,
+        Text = message,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        Font = Enum.Font.SourceSans,
+        TextWrapped = true
+    })
+    
+    -- Button Container
+    local buttonContainer = Tundra.Create("Frame", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 1, -50),
+        BackgroundTransparency = 1
+    })
+    
+    local results = {}
+    
+    if buttons then
+        for i, buttonData in ipairs(buttons) do
+            local button = Tundra.Create("TextButton", {
+                Parent = buttonContainer,
+                Size = UDim2.new(0, 80, 1, 0),
+                Position = UDim2.new(1 - (#buttons - i + 1) * 0.25, -10, 0, 0),
+                BackgroundColor3 = buttonData.Risky and Tundra.Themes[Tundra.CurrentTheme].Danger or Tundra.Themes[Tundra.CurrentTheme].Primary,
+                Text = buttonData.Text,
+                TextColor3 = Color3.fromRGB(255, 255, 255),
+                TextSize = 14,
+                Font = Enum.Font.SourceSansSemibold
+            })
+            
+            Tundra.Roundify(button, 6)
+            
+            button.MouseButton1Click:Connect(function()
+                if buttonData.Callback then
+                    buttonData.Callback()
+                end
+                warning:Destroy()
+            end)
+        end
+    else
+        local okButton = Tundra.Create("TextButton", {
+            Parent = buttonContainer,
+            Size = UDim2.new(0, 80, 1, 0),
+            Position = UDim2.new(0.5, -40, 0, 0),
+            BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Primary,
+            Text = "OK",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextSize = 14,
+            Font = Enum.Font.SourceSansSemibold
+        })
+        
+        Tundra.Roundify(okButton, 6)
+        
+        okButton.MouseButton1Click:Connect(function()
+            warning:Destroy()
+        end)
+    end
+    
+    warning.Parent = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    return warning
+end
+
+-- ====================
+-- NOTIFICATION SYSTEM
+-- ====================
+function Tundra.Notify(title, message, duration, notificationType)
+    duration = duration or 5
+    notificationType = notificationType or "Info" -- Info, Success, Warning, Error
+    
+    local colors = {
+        Info = Tundra.Themes[Tundra.CurrentTheme].Primary,
+        Success = Tundra.Themes[Tundra.CurrentTheme].Success,
+        Warning = Tundra.Themes[Tundra.CurrentTheme].Warning,
+        Error = Tundra.Themes[Tundra.CurrentTheme].Danger
+    }
+    
+    local notification = Tundra.Create("ScreenGui", {
+        Name = "TundraNotification",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Global
+    })
+    
+    local mainFrame = Tundra.Create("Frame", {
+        Parent = notification,
+        Size = UDim2.new(0, 300, 0, 80),
+        Position = UDim2.new(1, -320, 1, -100),
+        BackgroundColor3 = Tundra.Themes[Tundra.CurrentTheme].Background,
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Roundify(mainFrame, 8)
+    Tundra.AddShadow(mainFrame, 0.3)
+    
+    local accent = Tundra.Create("Frame", {
+        Parent = mainFrame,
+        Size = UDim2.new(0, 4, 1, 0),
+        BackgroundColor3 = colors[notificationType],
+        BorderSizePixel = 0
+    })
+    
+    Tundra.Create("UICorner", {
+        Parent = accent,
+        CornerRadius = UDim.new(0, 8)
+    })
+    
+    local titleLabel = Tundra.Create("TextLabel", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, -20, 0, 25),
+        Position = UDim2.new(0, 15, 0, 10),
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].Text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSansSemibold
+    })
+    
+    local messageLabel = Tundra.Create("TextLabel", {
+        Parent = mainFrame,
+        Size = UDim2.new(1, -20, 0, 35),
+        Position = UDim2.new(0, 15, 0, 35),
+        BackgroundTransparency = 1,
+        Text = message,
+        TextColor3 = Tundra.Themes[Tundra.CurrentTheme].SubText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.SourceSans,
+        TextWrapped = true
+    })
+    
+    notification.Parent = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Slide in animation
+    mainFrame.Position = UDim2.new(1, 300, 1, -100)
+    Tundra.Tween(mainFrame, {
+        Position = UDim2.new(1, -320, 1, -100)
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    
+    -- Auto dismiss
+    task.wait(duration)
+    
+    -- Slide out animation
+    Tundra.Tween(mainFrame, {
+        Position = UDim2.new(1, 300, 1, -100)
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+    
+    task.wait(0.3)
+    notification:Destroy()
+    
+    return notification
+end
+
+-- ====================
+-- THEME MANAGER
+-- ====================
+function Tundra.SetTheme(themeName)
+    if Tundra.Themes[themeName] then
+        Tundra.CurrentTheme = themeName
+        return true
+    end
+    return false
+end
+
+function Tundra.GetCurrentTheme()
+    return Tundra.Themes[Tundra.CurrentTheme]
+end
+
+function Tundra.CreateCustomTheme(name, colors)
+    Tundra.Themes[name] = colors
+    return true
+end
+
+-- ====================
+-- INITIALIZATION
+-- ====================
+function Tundra.Init()
+    -- Load saved theme
+    local savedTheme = Tundra.SaveManager:Get("Theme", "Dark")
+    Tundra.SetTheme(savedTheme)
+    
+    -- Auto-save theme changes
+    local oldTheme = Tundra.CurrentTheme
+    while true do
+        task.wait(1)
+        if Tundra.CurrentTheme ~= oldTheme then
+            Tundra.SaveManager:Set("Theme", Tundra.CurrentTheme)
+            oldTheme = Tundra.CurrentTheme
+        end
+    end
+end
+
+-- Auto-initialize if possible
+task.spawn(function()
+    Tundra.Init()
+end)
 
 return Tundra
